@@ -53,3 +53,5 @@ export function handleHashChange() {
     viewRenderers.renderWorkspace();
   }
 }
+
+window.navigateTo = navigateTo;

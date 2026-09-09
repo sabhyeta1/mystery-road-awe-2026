@@ -77,3 +77,5 @@ export function renderLocations() {
   }
   container.innerHTML = html;
 }
+
+window.switchPeopleTab = switchPeopleTab;

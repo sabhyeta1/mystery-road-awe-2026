@@ -31,7 +31,7 @@ export function setupEventListeners() {
   document.getElementById("timelineLocationFilter").addEventListener("change", renderTimeline);
   document.getElementById("timelineTypeFilter").addEventListener("change", renderTimeline);
 
-  document.getElementById("hypConfidence").addEventListener("input", function (e) {
-    document.getElementById("hypConfidenceValue").textContent = e.target.value;
+  document.getElementById("hypConfidence").addEventListener("input", (e) => {
+  document.getElementById("hypConfidenceValue").textContent = e.target.value;
   });
 }

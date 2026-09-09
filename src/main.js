@@ -23,11 +23,21 @@ function initApp() {
   loadNotesFromStorage();
   setupEventListeners();
 
+  //TASK 3: ASYNC / PROMISE BUG 
+  //returns a promise although it is never awaited
+  // loadAllData().then(function () {
+  //  handleHashChange();
+  //  var firstNote = loadNoteAsync("E01");
+  //  console.log("First note preview:", firstNote);
+  //});
   loadAllData().then(function () {
-    handleHashChange();
-    var firstNote = loadNoteAsync("E01");
-    console.log("First note preview:", firstNote);
-  });
+  handleHashChange();
+  return loadNoteAsync("E01");
+}).then(function (firstNote) {
+  console.log("First note preview:", firstNote);
+});
+
+
 }
 
 window.addEventListener("DOMContentLoaded", initApp);

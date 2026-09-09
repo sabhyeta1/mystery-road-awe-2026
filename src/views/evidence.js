@@ -305,3 +305,6 @@ export function saveCurrentNote() {
   if (preview) preview.innerHTML = text;
 }
 
+window.handleSortChange = handleSortChange;
+window.closeEvidenceDetail = closeEvidenceDetail;
+window.saveCurrentNote = saveCurrentNote;

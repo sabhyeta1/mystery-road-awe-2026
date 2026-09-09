@@ -64,7 +64,7 @@ export function renderTimeline() {
     var eventLocationNames = [];
     for (var el = 0; el < item.locationIds.length; el++) {
       var evtLoc = findLocationById(item.locationIds[el]);
-      eventLocationNames.push(evtLoc || item.locationIds[el]);
+      eventLocationNames.push(evtLoc ? (evtLoc.id + " - " + evtLoc.name) : item.locationIds[el]);
     }
     if (eventLocationNames.length > 0) {
       html += '<p class="evidence-meta">Location: ' + eventLocationNames.join(", ") + "</p>";
@@ -97,6 +97,19 @@ export function openEvidenceModal(evidenceId) {
     modal = document.createElement("div");
     modal.id = "quickViewModal";
     document.body.appendChild(modal);
+
+    modal.addEventListener("click", function (e) {
+      if (e.target.classList.contains("modal-close-btn") || e.target.classList.contains("modal-backdrop")) {
+        modal.innerHTML = "";
+      }
+      if (e.target.getAttribute && e.target.getAttribute("data-open-full")) {
+        modal.innerHTML = "";
+        navigateTo("evidence");
+        setTimeout(function () {
+          openEvidenceDetail(e.target.getAttribute("data-open-full"));
+        }, 0);
+      }
+    });
   }
 
   modal.innerHTML =
@@ -110,17 +123,4 @@ export function openEvidenceModal(evidenceId) {
 
   state.modalCloseListenerCount++;
   console.log("modal opened, active close listeners:", state.modalCloseListenerCount);
-
-  modal.addEventListener("click", function (e) {
-    if (e.target.classList.contains("modal-close-btn") || e.target.classList.contains("modal-backdrop")) {
-      modal.innerHTML = "";
-    }
-    if (e.target.getAttribute && e.target.getAttribute("data-open-full")) {
-      modal.innerHTML = "";
-      navigateTo("evidence");
-      setTimeout(function () {
-        openEvidenceDetail(e.target.getAttribute("data-open-full"));
-      }, 0);
-    }
-  });
 }

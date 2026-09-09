@@ -19,47 +19,35 @@ export function hideLoadingStep() {
   }
 }
 
-function loadCorePeopleAndLocations() {
-  return fetch("data/case.json").then(function (caseRes) {
-    return caseRes.json().then(function (caseJson) {
-      state.caseData = caseJson;
+async function loadCorePeopleAndLocations() {
+  const caseRes = await fetch("data/case.json");
+  state.caseData = await caseRes.json();
 
-      return fetch("data/people.json").then(function (peopleRes) {
-        return peopleRes.json().then(function (peopleJson) {
-          state.allPeople = peopleJson;
+  const peopleRes = await fetch("data/people.json");
+  state.allPeople = await peopleRes.json();
 
-          return fetch("data/locations.json").then(function (locationsRes) {
-            return locationsRes.json().then(function (locationsJson) {
-              state.allLocations = locationsJson;
+  const locationsRes = await fetch("data/locations.json");
+  state.allLocations = await locationsRes.json();
 
-              hideLoadingStep();
-              renderDashboard();
-              populateAllDropdowns();
-            });
-          });
-        });
-      });
-    });
-  });
+  hideLoadingStep();
+  renderDashboard();
+  populateAllDropdowns();
 }
 
-function loadEvidenceData() {
-  fetch("data/evidence.json")
-    .then(function (res) {
-      return res.json();
-    })
-    .then(function (data) {
-      state.allEvidence = data;
-      applyStoredBookmarkFlags();
-      state.filteredEvidence = state.allEvidence;
-      renderDashboard();
-      populateAllDropdowns();
-      if (state.currentPage === "evidence") renderEvidenceList();
-    })
-    .catch(function (err) {
-      console.error("Failed to load evidence.json", err);
-      alert("Evidence could not be loaded. Some views may be incomplete.");
-    });
+async function loadEvidenceData() {
+  try {
+    const res = await fetch("data/evidence.json");
+    const data = await res.json();
+    state.allEvidence = data;
+    applyStoredBookmarkFlags();
+    state.filteredEvidence = state.allEvidence.slice();
+    renderDashboard();
+    populateAllDropdowns();
+    if (state.currentPage === "evidence") renderEvidenceList();
+  } catch (err) {
+    console.error("Failed to load evidence.json", err);
+    alert("Evidence could not be loaded. Some views may be incomplete.");
+  }
 }
 
 function loadTimelineData() {

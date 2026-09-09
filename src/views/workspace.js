@@ -139,3 +139,5 @@ export function loadHypothesisFromStorage() {
     evidenceSelect.options[i].selected = savedIds.indexOf(evidenceSelect.options[i].value) !== -1;
   }
 }
+
+window.saveHypothesis = saveHypothesis;
