@@ -1,20 +1,20 @@
 export function formatDate(ts) {
   if (!ts) return "Unknown date";
-  var d = new Date(ts);
+  const d = new Date(ts);
   if (isNaN(d.getTime())) return ts;
   return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) +
     " " + d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
 }
 
 export const getStatusBadgeClass = (status) => {
-  var s = (status || "").toLowerCase();
+  const s = (status || "").toLowerCase();
   if (s === "reviewed") return "badge-reviewed";
   if (s === "flagged") return "badge-flagged";
   return "badge-unreviewed";
 };
 
 export const getRelevanceBadgeClass = (relevance) => {
-  var r = (relevance || "").toLowerCase();
+  const r = (relevance || "").toLowerCase();
   if (r === "relevant") return "badge-relevant";
   return "badge-unreviewed";
 };
@@ -31,7 +31,7 @@ export function statCardHTML(value, label) {
 }
 
 export function statusOptionHTML(current, value, label) {
-  var currentLower = (current || "").toLowerCase();
-  var selected = currentLower === value ? " selected" : "";
+  const currentLower = (current || "").toLowerCase();
+  const selected = currentLower === value ? " selected" : "";
   return '<option value="' + value + '"' + selected + ">" + label + "</option>";
 }

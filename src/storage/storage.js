@@ -1,4 +1,3 @@
-
 import { state, STORAGE_KEY_BOOKMARKS, STORAGE_KEY_NOTES } from "../state/store.js";
 
 //"state." in front of each bookmarks and notesstore: reading and writing a property of the shared state object, never reassigning state itself.
@@ -9,8 +8,8 @@ export function saveBookmarksToStorage() {
 
 export function loadBookmarksFromStorage() {
   try {
-    var raw = localStorage.getItem(STORAGE_KEY_BOOKMARKS);
-    var parsed = raw ? JSON.parse(raw) : [];
+    const raw = localStorage.getItem(STORAGE_KEY_BOOKMARKS);
+    const parsed = raw ? JSON.parse(raw) : [];
     state.bookmarks = Array.isArray(parsed) ? parsed : [];
   } catch (err) {
     console.warn("Could not read stored bookmarks, starting empty", err);
@@ -28,7 +27,7 @@ export function loadNoteForEvidence(evidenceId) {
 }
 
 export function loadNotesFromStorage() {
-  var raw = localStorage.getItem(STORAGE_KEY_NOTES);
+  const raw = localStorage.getItem(STORAGE_KEY_NOTES);
   if (!raw) {
     state.notesStore = {};
     return;
