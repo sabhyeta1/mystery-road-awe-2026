@@ -1,0 +1,24 @@
+{
+  "name": "mystery-road-awe-2026",
+  "version": "1.0.0",
+  "description": "Investigate the failure of an AI-assisted rehabilitation robot.",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sabhyeta1/mystery-road-awe-2026.git"
+  },
+  "keywords": [],
+  "author": "sabhyeta",
+  "license": "UNLICENSED",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/sabhyeta1/mystery-road-awe-2026/issues"
+  },
+  "homepage": "https://github.com/sabhyeta1/mystery-road-awe-2026#readme",
+  "devDependencies": {
+    "vite": "^8.3.0"
+  }
+}
