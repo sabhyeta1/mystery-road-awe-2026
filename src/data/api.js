@@ -39,6 +39,7 @@ async function loadEvidenceData() {
     const res = await fetch("data/evidence.json");
     const data = await res.json();
     state.allEvidence = data;
+    state.evidenceViewLoading = false; 
     applyStoredBookmarkFlags();
     state.filteredEvidence = state.allEvidence.slice();
     renderDashboard();
