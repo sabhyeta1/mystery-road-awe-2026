@@ -4,6 +4,7 @@
   "description": "Investigate the failure of an AI-assisted rehabilitation robot.",
   "main": "src/main.js",
   "scripts": {
+    "dev": "vite", 
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
