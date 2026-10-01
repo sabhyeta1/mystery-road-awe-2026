@@ -120,15 +120,44 @@ ticked. The table above is just a fast overview, tick the boxes inside each demo
 
 **Tasks**
 
-- [ ] Install Vite and configure it for this project (restructure files if needed so Vite can find `index.html`/your modules/the `data/` and `assets/` folders correctly).
-- [ ] Get `vite`'s dev server running the app with the same functionality it had before. Verify every view still works, not just that the page loads.
-- [ ] Trigger Hot Module Replacement at least once: change something in the running app's source and observe the update happen without a full page reload.
+- [x] Install Vite and configure it for this project (restructure files if needed so Vite can find `index.html`/your modules/the `data/` and `assets/` folders correctly).
+- [x] Get `vite`'s dev server running the app with the same functionality it had before. Verify every view still works, not just that the page loads.
+- [x] Trigger Hot Module Replacement at least once: change something in the running app's source and observe the update happen without a full page reload.
 
 **Questions** (depend on the tasks above)
 
 - [ ] What is the difference between how you used to run this app (a plain static file server) and running it through Vite's dev server? Name at least one thing Vite's dev server does that a plain static server doesn't.
+
+      A plain static server (like VS Code's Live Server) just hands out files exactly as they sit on disk, it doesn't understand or transform anything. 
+      Vite's dev server does that too, but it also does extra work: it watches my source files and, 
+      when I save a change, pushes just that changed module into the already-running page instead of me having to refresh: 
+      that's Hot Module Replacement, which a plain static server has no concept of at all.
+
+      Vite's dev server also understands my project's structure specifically, it knows to serve the contents of my public/ folder at the site root, 
+      and it prints clear terminal output (like connection status and HMR update messages) that a plain file server never gives me.
+
 - [ ] What is Hot Module Replacement, and what specifically did you observe happen (and *not* happen, e.g. to app state) when you triggered it?
+
+      Hot Module Replacement (HMR) is when the dev server detects that a source file changed,
+      sends just that changed piece of code to the already-running page in the browser, 
+      and updates it in place, without reloading the whole page.
+
+      I observed this directly twice: once by accident while fixing a bug in api.js (the page updated with the fix live, without me refreshing), 
+      and once deliberately, by changing a heading string in dashboard.js's renderDashboard() function from "Review progress" to "Review progress (HMR test)". 
+      In both cases the heading/behavior updated instantly, the page did not flash or reload, and my scroll position and current view (#evidence / #dashboard) stayed exactly where they were. 
+      If it had been a normal full reload instead, the app would have restarted from the Dashboard view and I'd have lost that context.
+
 - [ ] Why does an app already split into ES modules (Exercise 1) integrate naturally with a tool like Vite, compared to the original single-`<script>` version?
+
+      Vite is built around understanding import/export statements. That is how it knows which files depend on which, 
+      so it can watch the right files and know what to re-send when one changes. My app was already split into ES modules in Exercise 1, 
+      with explicit imports between files like src/data/api.js importing from src/state/store.js, 
+      so Vite could immediately understand my project's real dependency graph with zero extra setup.
+
+      The old single app.js version had none of that structure, it was one big file with global var declarations and no import/export statements anywhere. 
+      Vite would have had nothing to analyze; there'd be no separate modules for it to track changes to individually, so HMR in particular wouldn't have anything meaningful to hook into. 
+      I'd have been stuck getting full page reloads on every change, the exact difference between the two forms in Table 2.2 of the manuscript. 
+      declarations vs. modules aside, it's really the import/export structure itself that Vite depends on.
 
 ---
 

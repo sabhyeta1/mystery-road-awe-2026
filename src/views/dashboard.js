@@ -28,6 +28,7 @@ export function renderDashboard() {
   html += "</div>";
 
   html += '<div class="dashboard-panel">';
+  //USE TO TEST HMR DEMO 2
   html += "<h3>Review progress</h3>";
   html += '<div class="progress-bar-outer"><div class="progress-bar-inner" style="width:' + progressPct + '%;"></div></div>';
   html += "<p>" + progressPct + "% of evidence reviewed</p>";
