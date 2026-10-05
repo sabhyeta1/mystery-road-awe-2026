@@ -1,4 +1,5 @@
 import { state, STORAGE_KEY_BOOKMARKS, STORAGE_KEY_NOTES } from "../state/store.js";
+import type { EvidenceId } from "../types/domain.js";
 
 //"state." in front of each bookmarks and notesstore: reading and writing a property of the shared state object, never reassigning state itself.
 
@@ -17,12 +18,12 @@ export function loadBookmarksFromStorage() {
   }
 }
 
-export function saveNoteForEvidence(evidenceId, text) {
+export function saveNoteForEvidence(evidenceId: EvidenceId, text: string): void {
   state.notesStore[evidenceId] = text;
   localStorage.setItem(STORAGE_KEY_NOTES, JSON.stringify(state.notesStore));
 }
 
-export function loadNoteForEvidence(evidenceId) {
+export function loadNoteForEvidence(evidenceId: EvidenceId): string {
   return state.notesStore[evidenceId] || "";
 }
 
@@ -35,8 +36,8 @@ export function loadNotesFromStorage() {
   state.notesStore = JSON.parse(raw);
 }
 
-export function loadNoteAsync(evidenceId) {
-  return new Promise(function (resolve) {
+export function loadNoteAsync(evidenceId: EvidenceId): Promise<string> {
+  return new Promise<string>(function (resolve) {
     resolve(state.notesStore[evidenceId] || "");
   });
 }

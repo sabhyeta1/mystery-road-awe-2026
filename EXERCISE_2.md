@@ -276,15 +276,15 @@ ticked. The table above is just a fast overview, tick the boxes inside each demo
 
 - [x] Show one specific type error you had to actually think about (not just silence with `any` or the `!` non-null assertion). What did it tell you about your code that plain JS review or testing hadn't?
 
-
+      In router.ts, viewRenderers starts as null and is assigned later by main.js. TypeScript said it was possibly null everywhere I called viewRenderers.renderDashboard(). I could have silenced it with !, but that would have just hidden the problem. I realised the code assumes registerViewRenderers() always runs first. If it didn't, handleHashChange would crash with 'cannot read properties of null'. Now it checks and throws a clear error. Plain JavaScript review and my manual testing never caught it because the order always happened to be right.
 
 - [x] When (if ever) is reaching for `any` the right call during a migration like this, versus a sign you should model the type properly? Where did you draw that line?
 
-
+      I didn't need to write any anywhere, and I think it's mostly a sign you should model the type properly. Where I'd accept it temporarily is a very large file you can't type yet, or data from outside that you haven't described. In that case I'd prefer unknown, which forces a check before use. My line was: if I know the shape, I write the type. The one place any sneaks in on its own is JSON.parse, which returns any. I typed the hypothesis draft with HypothesisDraft so the rest of the code is protected, but loadNotesFromStorage and loadBookmarksFromStorage still trust whatever is stored.
 
 - [x] Did the migration reveal anything that was a genuine, previously-unnoticed bug (as opposed to just noise)? If yes, explain it. If no, explain how you're confident it was only noise.
 
-
+      Yes, but not through the compiler. When I tested the migrated app, the console showed renderEvidenceList is not defined whenever I changed the Status filter. It also happened in the old JavaScript version. It came from setAttribute('onchange', 'renderEvidenceList()'), which looks for a global function that doesn't exist, because the code uses modules. The filter still worked because the same function was also attached with addEventListener, so the broken line was redundant. TypeScript couldn't catch it because the function name is inside a text string. I removed the line. The types did find a few real weaknesses, such as the possibly-null viewRenderers and unchecked status values, but nothing that corrupted data
 
 
 ---

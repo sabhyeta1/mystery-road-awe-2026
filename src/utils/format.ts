@@ -29,7 +29,7 @@ export function certaintyBadgeClass(certainty: string): string {
   return "unreviewed";
 }
 
-export function statCardHTML(value: string, label: string) {
+export function statCardHTML(value: number | string, label: string): string {
   return (
     '<div class="stat-card"><div class="stat-value">' +
     value +

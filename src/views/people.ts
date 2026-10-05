@@ -1,14 +1,15 @@
 import { state } from "../state/store.js";
 import { countEvidenceForPerson } from "../utils/lookups.js";
 import { navigateTo } from "../navigation/router.js";
+import { getEl } from "../utils/dom.js";
 import { renderEvidenceList } from "./evidence.js";
 
-export function switchPeopleTab(tab) {
+export function switchPeopleTab(tab: "people" | "locations"): void {
   state.currentPeopleTab = tab;
-  const peoplePanel = document.getElementById("peoplePanel");
-  const locationsPanel = document.getElementById("locationsPanel");
-  const peopleTabBtn = document.getElementById("tabPeopleBtn");
-  const locationsTabBtn = document.getElementById("tabLocationsBtn");
+  const peoplePanel = getEl("peoplePanel");
+  const locationsPanel = getEl("locationsPanel");
+  const peopleTabBtn = getEl("tabPeopleBtn");
+  const locationsTabBtn = getEl("tabLocationsBtn");
 
   if (tab === "people") {
     peoplePanel.classList.remove("hidden");
@@ -23,8 +24,8 @@ export function switchPeopleTab(tab) {
   }
 }
 
-export function renderPeople() {
-  const container = document.getElementById("peoplePanel");
+export function renderPeople(): void {
+  const container = getEl("peoplePanel");
   let html = "";
   for (let i = 0; i < state.allPeople.length; i++) {
     const person = state.allPeople[i];
@@ -59,9 +60,10 @@ export function renderPeople() {
 
   const links = container.querySelectorAll(".evidence-count-link");
   for (let l = 0; l < links.length; l++) {
-    links[l].addEventListener("click", function (e) {
-      const personId = e.target.getAttribute("data-person-id");
-      document.getElementById("filterPerson").value = personId;
+    links[l].addEventListener("click", function () {
+      const personId = links[l].getAttribute("data-person-id");
+      if (personId === null) return;
+      getEl<HTMLSelectElement>("filterPerson").value = personId;
       navigateTo("evidence");
       setTimeout(function () {
         renderEvidenceList();
@@ -70,8 +72,8 @@ export function renderPeople() {
   }
 }
 
-export function renderLocations() {
-  const container = document.getElementById("locationsPanel");
+export function renderLocations(): void {
+  const container = getEl("locationsPanel");
   let html = "";
   for (let i = 0; i < state.allLocations.length; i++) {
     const loc = state.allLocations[i];

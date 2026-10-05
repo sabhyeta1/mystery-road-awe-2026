@@ -1,8 +1,10 @@
 import { state, STORAGE_KEY_HYPOTHESIS } from "../state/store.js";
 import { navigateTo } from "../navigation/router.js";
+import { getEl } from "../utils/dom.js";
+import type { EvidenceId, HypothesisDraft } from "../types/domain.js";
 import { openEvidenceDetail } from "./evidence.js";
 
-export function renderWorkspace() {
+export function renderWorkspace(): void {
   renderBookmarksList();
   renderNotesList();
   populateHypothesisDropdowns();
@@ -39,9 +41,10 @@ function renderBookmarksList() {
 
   const openButtons = container.querySelectorAll("[data-open-evidence]");
   for (let b = 0; b < openButtons.length; b++) {
-    openButtons[b].addEventListener("click", function (e) {
+    openButtons[b].addEventListener("click", function () {
+      const id = openButtons[b].getAttribute("data-open-evidence");
+      if (id === null) return;
       navigateTo("evidence");
-      const id = e.target.getAttribute("data-open-evidence");
       setTimeout(function () {
         openEvidenceDetail(id);
       }, 0);
@@ -53,7 +56,7 @@ function renderNotesList() {
   const container = document.getElementById("notesList");
   if (!container) return;
 
-  const noteEntries = [];
+  const noteEntries: { index: number; evidenceId: EvidenceId; title: string; text: string }[] = [];
   for (let i = 0; i < state.allEvidence.length; i++) {
     const note = state.notesStore[state.allEvidence[i].id];
     if (note) {
@@ -85,8 +88,8 @@ function renderNotesList() {
 }
 
 export function populateHypothesisDropdowns() {
-  const suspectSelect = document.getElementById("hypSuspect");
-  const evidenceSelect = document.getElementById("hypEvidence");
+  const suspectSelect = document.querySelector<HTMLSelectElement>("#hypSuspect");
+  const evidenceSelect = document.querySelector<HTMLSelectElement>("#hypEvidence");
   if (!suspectSelect || !evidenceSelect) return;
 
   const currentSuspect = suspectSelect.value;
@@ -111,13 +114,13 @@ export function populateHypothesisDropdowns() {
 }
 
 export function saveHypothesis() {
-  const draft = {
-    suspectId: document.getElementById("hypSuspect").value,
-    nature: document.getElementById("hypNature").value,
-    evidenceIds: getSelectedOptions(document.getElementById("hypEvidence")),
-    confidence: document.getElementById("hypConfidence").value,
-    explanation: document.getElementById("hypExplanation").value,
-    alternative: document.getElementById("hypAlternative").value,
+  const draft: HypothesisDraft = {
+    suspectId: getEl<HTMLSelectElement>("hypSuspect").value,
+    nature: getEl<HTMLSelectElement>("hypNature").value,
+    evidenceIds: getSelectedOptions(getEl<HTMLSelectElement>("hypEvidence")),
+    confidence: getEl<HTMLInputElement>("hypConfidence").value,
+    explanation: getEl<HTMLTextAreaElement>("hypExplanation").value,
+    alternative: getEl<HTMLTextAreaElement>("hypAlternative").value,
     savedAt: new Date().toISOString(),
   };
 
@@ -129,15 +132,15 @@ export function saveHypothesis() {
     return;
   }
 
-  const msg = document.getElementById("hypothesisSavedMsg");
+  const msg = getEl("hypothesisSavedMsg");
   msg.classList.remove("hidden");
   setTimeout(function () {
     msg.classList.add("hidden");
   }, 2000);
 }
 
-function getSelectedOptions(selectEl) {
-  const result = [];
+function getSelectedOptions(selectEl: HTMLSelectElement): string[] {
+  const result: string[] = [];
   for (let i = 0; i < selectEl.options.length; i++) {
     if (selectEl.options[i].selected) result.push(selectEl.options[i].value);
   }
@@ -148,16 +151,16 @@ export function loadHypothesisFromStorage() {
   const raw = localStorage.getItem(STORAGE_KEY_HYPOTHESIS);
   if (!raw) return;
 
-  const draft = JSON.parse(raw);
+  const draft: HypothesisDraft = JSON.parse(raw);
 
-  document.getElementById("hypSuspect").value = draft.suspectId || "";
-  document.getElementById("hypNature").value = draft.nature || "";
-  document.getElementById("hypConfidence").value = draft.confidence || 50;
-  document.getElementById("hypConfidenceValue").textContent = draft.confidence || 50;
-  document.getElementById("hypExplanation").value = draft.explanation || "";
-  document.getElementById("hypAlternative").value = draft.alternative || "";
+  getEl<HTMLSelectElement>("hypSuspect").value = draft.suspectId || "";
+  getEl<HTMLSelectElement>("hypNature").value = draft.nature || "";
+  getEl<HTMLInputElement>("hypConfidence").value = String(draft.confidence || 50);
+  getEl("hypConfidenceValue").textContent = String(draft.confidence || 50);
+  getEl<HTMLTextAreaElement>("hypExplanation").value = draft.explanation || "";
+  getEl<HTMLTextAreaElement>("hypAlternative").value = draft.alternative || "";
 
-  const evidenceSelect = document.getElementById("hypEvidence");
+  const evidenceSelect = getEl<HTMLSelectElement>("hypEvidence");
   const savedIds = draft.evidenceIds || [];
   for (let i = 0; i < evidenceSelect.options.length; i++) {
     evidenceSelect.options[i].selected = savedIds.indexOf(evidenceSelect.options[i].value) !== -1;

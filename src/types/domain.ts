@@ -62,3 +62,21 @@ export interface CaseInfo {
   leadInvestigator: string;
   notes: string;
 }
+
+export interface HypothesisDraft {
+  suspectId: PersonId;
+  nature: string;
+  evidenceIds: EvidenceId[];
+  confidence: string;
+  explanation: string;
+  alternative: string;
+  savedAt: string;
+}
+
+export function isEvidenceStatus(value: string): value is EvidenceStatus {
+  return value === "unreviewed" || value === "reviewed" || value === "flagged";
+}
+
+export function isEvidenceRelevance(value: string): value is EvidenceRelevance {
+  return value === "unknown" || value === "relevant" || value === "irrelevant";
+}

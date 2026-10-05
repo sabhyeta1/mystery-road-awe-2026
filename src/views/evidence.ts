@@ -11,6 +11,13 @@ import {
   formatDate,
   statusOptionHTML,
 } from "../utils/format.js";
+import { getEl } from "../utils/dom.js";
+import {
+  isEvidenceRelevance,
+  isEvidenceStatus,
+  type Evidence,
+  type EvidenceId,
+} from "../types/domain.js";
 import {
   saveBookmarksToStorage,
   saveNoteForEvidence,
@@ -23,7 +30,7 @@ export function populateEvidenceDropdowns() {
   const locationSelect = document.getElementById("filterLocation");
   if (!typeSelect || !personSelect || !locationSelect) return;
 
-  const types = [];
+  const types: string[] = [];
   for (let i = 0; i < state.allEvidence.length; i++) {
     const t = state.allEvidence[i].type.toLowerCase();
     if (types.indexOf(t) === -1) types.push(t);
@@ -52,16 +59,16 @@ export function populateEvidenceDropdowns() {
   }
 }
 
-export function getFilteredEvidence() {
-  const searchBox = document.getElementById("evidenceSearch");
+export function getFilteredEvidence(): Evidence[] {
+  const searchBox = document.querySelector<HTMLInputElement>("#evidenceSearch");
   const searchTerm = searchBox ? searchBox.value.toLowerCase().trim() : "";
-  const typeVal = document.getElementById("filterType").value;
-  const personVal = document.getElementById("filterPerson").value;
-  const locationVal = document.getElementById("filterLocation").value;
-  const statusVal = document.getElementById("filterStatus").value;
-  const relevanceVal = document.getElementById("filterRelevance").value;
+  const typeVal = getEl<HTMLSelectElement>("filterType").value;
+  const personVal = getEl<HTMLSelectElement>("filterPerson").value;
+  const locationVal = getEl<HTMLSelectElement>("filterLocation").value;
+  const statusVal = getEl<HTMLSelectElement>("filterStatus").value;
+  const relevanceVal = getEl<HTMLSelectElement>("filterRelevance").value;
 
-  const results = [];
+  const results: Evidence[] = [];
   for (let i = 0; i < state.allEvidence.length; i++) {
     const item = state.allEvidence[i];
     let matches = true;
@@ -113,7 +120,7 @@ export function renderEvidenceList() {
   container.addEventListener("click", handleEvidenceListClick);
 }
 
-function renderEvidenceCardHTML(ev) {
+function renderEvidenceCardHTML(ev: Evidence): string {
   const isBookmarked = state.bookmarks.indexOf(ev.id) !== -1;
   let html = '<div class="evidence-card" data-id="' + ev.id + '">';
   html +=
@@ -152,22 +159,24 @@ function renderEvidenceCardHTML(ev) {
   return html;
 }
 
-function handleEvidenceListClick(event) {
+function handleEvidenceListClick(event: Event): void {
   const target = event.target;
+  if (!(target instanceof HTMLElement)) return;
 
-  if (target.dataset && target.dataset.action === "bookmark") {
+  const bookmarkId = target.dataset.id;
+  if (target.dataset.action === "bookmark" && bookmarkId !== undefined) {
     event.stopPropagation();
-    handleBookmarkClick(target.dataset.id);
+    handleBookmarkClick(bookmarkId);
     return;
   }
 
-  const card = target.closest(".evidence-card");
-  if (card) {
-    openEvidenceDetail(card.getAttribute("data-id"));
+  const cardId = target.closest(".evidence-card")?.getAttribute("data-id");
+  if (cardId) {
+    openEvidenceDetail(cardId);
   }
 }
 
-function handleBookmarkClick(evidenceId) {
+function handleBookmarkClick(evidenceId: EvidenceId): void {
   const ev = findEvidenceById(evidenceId);
   if (!ev) return;
 
@@ -191,7 +200,7 @@ export function applyStoredBookmarkFlags() {
 }
 
 export function handleSortChange() {
-  const sortValue = document.getElementById("sortEvidence").value;
+  const sortValue = getEl<HTMLSelectElement>("sortEvidence").value;
 
   if (sortValue === "title-asc") {
     state.filteredEvidence.sort(function (a, b) {
@@ -203,35 +212,36 @@ export function handleSortChange() {
     });
   } else if (sortValue === "date-asc") {
     state.filteredEvidence.sort(function (a, b) {
-      return new Date(a.timestamp) - new Date(b.timestamp);
+      return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
     });
   } else {
     state.filteredEvidence.sort(function (a, b) {
-      return new Date(b.timestamp) - new Date(a.timestamp);
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
     });
   }
   renderEvidenceList();
 }
 
 export function clearFilters() {
-  document.getElementById("evidenceSearch").value = "";
-  document.getElementById("filterType").value = "";
-  document.getElementById("filterPerson").value = "";
-  document.getElementById("filterLocation").value = "";
-  document.getElementById("filterStatus").value = "";
-  document.getElementById("filterRelevance").value = "";
+  getEl<HTMLInputElement>("evidenceSearch").value = "";
+  getEl<HTMLSelectElement>("filterType").value = "";
+  getEl<HTMLSelectElement>("filterPerson").value = "";
+  getEl<HTMLSelectElement>("filterLocation").value = "";
+  getEl<HTMLSelectElement>("filterStatus").value = "";
+  getEl<HTMLSelectElement>("filterRelevance").value = "";
   renderEvidenceList();
 }
 
-function simulateAsyncSearch(term) {
-  return new Promise(function (resolve) {
+function simulateAsyncSearch(term: string): Promise<string> {
+  return new Promise<string>(function (resolve) {
     setTimeout(function () {
       resolve(term);
     }, 300);
   });
 }
 
-export function handleSearchInput(event) {
+export function handleSearchInput(event: Event): void {
+  if (!(event.target instanceof HTMLInputElement)) return;
   const term = event.target.value;
   state.latestSearchRequestId = (state.latestSearchRequestId || 0) + 1;
   const requestId = state.latestSearchRequestId;
@@ -242,35 +252,35 @@ export function handleSearchInput(event) {
   });
 }
 
-export function openEvidenceDetail(evidenceId) {
+export function openEvidenceDetail(evidenceId: EvidenceId): void {
   const ev = findEvidenceById(evidenceId);
   if (!ev) return;
   state.selectedEvidence = ev;
 
-  const section = document.getElementById("evidenceDetailSection");
+  const section = getEl("evidenceDetailSection");
   section.classList.remove("hidden");
 
   renderEvidenceDetail(ev);
   section.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-export function closeEvidenceDetail() {
-  const section = document.getElementById("evidenceDetailSection");
+export function closeEvidenceDetail(): void {
+  const section = getEl("evidenceDetailSection");
   section.classList.add("hidden");
   section.innerHTML = "";
   state.selectedEvidence = null;
 }
 
-export function renderEvidenceDetail(ev) {
-  const section = document.getElementById("evidenceDetailSection");
+export function renderEvidenceDetail(ev: Evidence): void {
+  const section = getEl("evidenceDetailSection");
 
-  const personNames = [];
+  const personNames: string[] = [];
   for (let p = 0; p < ev.personIds.length; p++) {
     const person = findPersonById(ev.personIds[p]);
     personNames.push(person ? person.name : ev.personIds[p]);
   }
 
-  const locationNames = [];
+  const locationNames: string[] = [];
   for (let l = 0; l < ev.locationIds.length; l++) {
     const loc = findLocationById(ev.locationIds[l]);
     locationNames.push(loc ? loc.id + " - " + loc.name : ev.locationIds[l]);
@@ -344,22 +354,29 @@ export function renderEvidenceDetail(ev) {
 
   section.innerHTML = html;
 
-  document.getElementById("detailStatusSelect").addEventListener("change", function (e) {
-    ev.status = e.target.value;
+  const statusSelect = getEl<HTMLSelectElement>("detailStatusSelect");
+  statusSelect.addEventListener("change", function () {
+    if (isEvidenceStatus(statusSelect.value)) {
+      ev.status = statusSelect.value;
+    }
     renderEvidenceDetail(ev);
     if (state.viewRendered.evidence) renderEvidenceList();
   });
-  document.getElementById("detailRelevanceSelect").addEventListener("change", function (e) {
-    ev.relevance = e.target.value;
+  const relevanceSelect = getEl<HTMLSelectElement>("detailRelevanceSelect");
+  relevanceSelect.addEventListener("change", function () {
+    if (isEvidenceRelevance(relevanceSelect.value)) {
+      ev.relevance = relevanceSelect.value;
+    }
     renderEvidenceDetail(ev);
     if (state.viewRendered.evidence) renderEvidenceList();
   });
 }
 
-export function saveCurrentNote() {
-  const textarea = document.getElementById("evidenceNoteInput");
+export function saveCurrentNote(): void {
+  const textarea = document.querySelector<HTMLTextAreaElement>("#evidenceNoteInput");
   if (!textarea) return;
   const evidenceId = textarea.getAttribute("data-evidence-id");
+  if (evidenceId === null) return;
   const text = textarea.value;
   saveNoteForEvidence(evidenceId, text);
   const preview = document.getElementById("notePreview");
