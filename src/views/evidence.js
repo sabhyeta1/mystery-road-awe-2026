@@ -1,4 +1,4 @@
-import { state, setLatestSearchRequestId } from "../state/store.js";
+import { state } from "../state/store.js";
 import { findPersonById, findEvidenceById, findLocationById, evidenceMentionsPerson } from "../utils/lookups.js";
 import { getStatusBadgeClass, getRelevanceBadgeClass, formatDate, statusOptionHTML } from "../utils/format.js";
 import { saveBookmarksToStorage, saveNoteForEvidence, loadNoteForEvidence } from "../storage/storage.js";
@@ -196,7 +196,7 @@ export function handleSearchInput(event) {
   state.latestSearchRequestId = (state.latestSearchRequestId || 0) + 1;
   const requestId = state.latestSearchRequestId;
 
-  simulateAsyncSearch(term).then(function (resolvedTerm) {
+  simulateAsyncSearch(term).then(function () {
     if (requestId !== state.latestSearchRequestId) return;
     renderEvidenceList();
   });

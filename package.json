@@ -4,9 +4,13 @@
   "description": "Investigate the failure of an AI-assisted rehabilitation robot.",
   "main": "src/main.js",
   "scripts": {
-    "dev": "vite", 
+    "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "format": "prettier --write src",
+    "format:check": "prettier --check src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -22,6 +26,11 @@
   },
   "homepage": "https://github.com/sabhyeta1/mystery-road-awe-2026#readme",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.11.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.9",
     "vite": "^8.3.0"
   }
 }

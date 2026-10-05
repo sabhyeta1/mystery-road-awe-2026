@@ -62,7 +62,7 @@ ticked. The table above is just a fast overview, tick the boxes inside each demo
 
 **Questions** (depend on the tasks above)
 
-- [ ] What problem does a package manager actually solve that "download the library and put it in a folder yourself" doesn't? Be specific.
+- [x] What problem does a package manager actually solve that "download the library and put it in a folder yourself" doesn't? Be specific.
 
       Tools like Vite are built from many small pieces of code, which all depend on each other. 
       A package manager finds all these pieces automatically and downloads them correctly, instead of having us hunt them down one by one by hand. 
@@ -70,7 +70,7 @@ ticked. The table above is just a fast overview, tick the boxes inside each demo
       and make sure every version is compatible. npm did that whole chain automatically and in one command, which is why installing vite installed 15 packages.
       It also handles cases where two different tools need different versions of the same package, which would be hard to sort out by hand, but npm resolves this automatically.
 
-- [ ] What's the difference between `dependencies` and `devDependencies` in `package.json`? Which
+- [x] What's the difference between `dependencies` and `devDependencies` in `package.json`? Which
       category will Vite, your linter/formatter, and TypeScript belong to, and why?
 
       dependencies are packages the app actually needs at runtime, in the browser, for the finished site to work. 
@@ -82,7 +82,7 @@ ticked. The table above is just a fast overview, tick the boxes inside each demo
       TypeScript gets compiled away into plain JavaScript, and the linter/formatter just check my source files. 
       None of their own code is present in what actually gets sent to a visitor's browser. 
 
-- [ ] What is a lockfile for, and what could go wrong for your teammates (or CI) if it weren't
+- [x] What is a lockfile for, and what could go wrong for your teammates (or CI) if it weren't
       committed to the repo?
 
       package.json doesn't pin an exact version of each tool but instead a range. 
@@ -94,7 +94,7 @@ ticked. The table above is just a fast overview, tick the boxes inside each demo
       That could cause "works on my machine, fails for them" bugs that have nothing to do with an actual code change, just version drift. 
       Committing the lockfile means npm install reproduces my exact installed tree, byte-for-byte, regardless of what's been released since.
 
-- [ ] If you chose pnpm: what does it do differently from npm regarding how `node_modules` is laid out and how disk space/install time is shared across projects? 
+- [x] If you chose pnpm: what does it do differently from npm regarding how `node_modules` is laid out and how disk space/install time is shared across projects? 
       If you chose npm: what would you gain or lose by switching to pnpm on a larger project?
 
       I chose npm, which gives every project its own separate copy of every package's files inside that project's node_modules folder. 
@@ -126,7 +126,7 @@ ticked. The table above is just a fast overview, tick the boxes inside each demo
 
 **Questions** (depend on the tasks above)
 
-- [ ] What is the difference between how you used to run this app (a plain static file server) and running it through Vite's dev server? Name at least one thing Vite's dev server does that a plain static server doesn't.
+- [x] What is the difference between how you used to run this app (a plain static file server) and running it through Vite's dev server? Name at least one thing Vite's dev server does that a plain static server doesn't.
 
       A plain static server (like VS Code's Live Server) just hands out files exactly as they sit on disk, it doesn't understand or transform anything. 
       Vite's dev server does that too, but it also does extra work: it watches my source files and, 
@@ -136,7 +136,7 @@ ticked. The table above is just a fast overview, tick the boxes inside each demo
       Vite's dev server also understands my project's structure specifically, it knows to serve the contents of my public/ folder at the site root, 
       and it prints clear terminal output (like connection status and HMR update messages) that a plain file server never gives me.
 
-- [ ] What is Hot Module Replacement, and what specifically did you observe happen (and *not* happen, e.g. to app state) when you triggered it?
+- [x] What is Hot Module Replacement, and what specifically did you observe happen (and *not* happen, e.g. to app state) when you triggered it?
 
       Hot Module Replacement (HMR) is when the dev server detects that a source file changed,
       sends just that changed piece of code to the already-running page in the browser, 
@@ -147,7 +147,7 @@ ticked. The table above is just a fast overview, tick the boxes inside each demo
       In both cases the heading/behavior updated instantly, the page did not flash or reload, and my scroll position and current view (#evidence / #dashboard) stayed exactly where they were. 
       If it had been a normal full reload instead, the app would have restarted from the Dashboard view and I'd have lost that context.
 
-- [ ] Why does an app already split into ES modules (Exercise 1) integrate naturally with a tool like Vite, compared to the original single-`<script>` version?
+- [x] Why does an app already split into ES modules (Exercise 1) integrate naturally with a tool like Vite, compared to the original single-`<script>` version?
 
       Vite is built around understanding import/export statements. That is how it knows which files depend on which, 
       so it can watch the right files and know what to re-send when one changes. My app was already split into ES modules in Exercise 1, 
@@ -165,15 +165,23 @@ ticked. The table above is just a fast overview, tick the boxes inside each demo
 
 **Tasks**
 
-- [ ] Run the production build (`vite build`) and inspect the generated `dist/` folder.
-- [ ] Serve that build locally with `vite preview` (not the dev server) and confirm the app still works end-to-end from the built output.
-- [ ] Compare the dev-mode source with the built output for at least one file: note what changed (filenames, size, formatting/minification).
+- [x] Run the production build (`vite build`) and inspect the generated `dist/` folder.
+- [x] Serve that build locally with `vite preview` (not the dev server) and confirm the app still works end-to-end from the built output.
+- [x] Compare the dev-mode source with the built output for at least one file: note what changed (filenames, size, formatting/minification).
 
 **Questions** (depend on the tasks above)
 
-- [ ] Name at least three concrete transformations Vite applied to your source when building for production (e.g. bundling, minification, hashed filenames. Pick the ones you actually observed).
-- [ ] Why do production filenames typically include a content hash? What problem does that solve for real deployments?
-- [ ] Why would you never want to deploy the dev server itself (`vite dev`/`vite`) to real users, even though it "works"?
+- [x] Name at least three concrete transformations Vite applied to your source when building for production (e.g. bundling, minification, hashed filenames. Pick the ones you actually observed).
+
+      When I ran npm run build, Vite did several things to my source. First, bundling: my 18 modules in src/ were combined into one JS file, index-DP4r8-jM.js, and my CSS into one CSS file. Second, minification: in the built file all whitespace and comments are gone, and names are shortened. For example, my function formatDate became a one-letter name, and I could only find it by searching for the string 'Unknown date'. Third, hashed filenames: the output files are named like index-DP4r8-jM.js. I also saw that Vite rewrote index.html. My ./src/main.js script tag became /assets/index-DP4r8-jM.js and moved into the <head>. Finally, it copied my public/ folder, with the data JSON files and images, into dist/ unchanged. The size went from about 41 kB of source JS to 24 kB built, or about 6 kB gzipped
+
+- [x] Why do production filenames typically include a content hash? What problem does that solve for real deployments?
+
+      Browsers and CDNs cache files by their URL, so they don't have to download them again. If my file were always called app.js, then after I deployed a new version, users could keep running their old cached copy and not see my update. The hash is computed from the file's contents. If I change the code, the hash and so the filename changes, so the browser sees a new URL and downloads the new file. If a file didn't change, its hash stays the same and it stays cached. This lets servers cache files for a very long time and still allows instant updates.
+
+- [x] Why would you never want to deploy the dev server itself (`vite dev`/`vite`) to real users, even though it "works"?
+
+      The dev server is built for development, not for real users. It doesn't produce optimized output. It serves my source files unbundled, so the browser makes many separate requests, which I saw in the Network tab: main.js, format.js and so on, versus a single bundle in the preview. Nothing is minified or hashed, so pages load more slowly and caching is poor. It also transforms files on demand for each request and includes development tooling such as hot reload. That adds overhead and isn't designed to handle production traffic or be secure at that scale. The right way to deploy is to run vite build and serve the static dist/ folder.
 
 ---
 
