@@ -359,15 +359,34 @@ ticked. The table above is just a fast overview, tick the boxes inside each demo
 
 **Tasks**
 
-- [ ] Deliberately commit a real TypeScript error (or a lint failure) that should block deployment, push it, and show the deploy workflow failing *before* it reaches the deploy step.
-- [ ] Identify exactly what permissions and/or secrets your deploy workflow needs to publish to GitHub Pages, and show where they're configured (repository settings, the `permissions:` key in the workflow file, etc.).
-- [ ] Open the run history for both workflows and be ready to read a failed run's logs live and explain, to someone unfamiliar with it, what failed and why.
+- [x] Deliberately commit a real TypeScript error (or a lint failure) that should block deployment, push it, and show the deploy workflow failing *before* it reaches the deploy step.
+- [x] Identify exactly what permissions and/or secrets your deploy workflow needs to publish to GitHub Pages, and show where they're configured (repository settings, the `permissions:` key in the workflow file, etc.).
+- [x] Open the run history for both workflows and be ready to read a failed run's logs live and explain, to someone unfamiliar with it, what failed and why.
 
 **Questions** (depend on the tasks above)
 
-- [ ] When your build step fails, does the previously-deployed version of the app stay live, get taken down, or something else? Is that the behavior you want, and why?
-- [ ] What GitHub Actions permission(s) or secret(s) does your deploy workflow actually need, and where did you grant/store them? What's the security risk of over-granting permissions here?
-- [ ] What's the difference between triggering a workflow `on: push`, `on: pull_request`, and `on: workflow_dispatch`? Which did you use for the development workflow (Demo 8) and which for the deployment workflow (Demo 9), and why is that pairing the right one?
+- [x] When your build step fails, does the previously-deployed version of the app stay live, get taken down, or something else? Is that the behavior you want, and why?
+
+      The previously deployed version stays live. My workflow has two jobs, and the deploy job has needs: build. When the build job fails, the deploy job never starts; GitHub marks it as skipped. GitHub Pages only changes when the deploy-pages action publishes a new artifact, so nothing is replaced or taken down. Users keep seeing the last good version.
+
+      That's the behavior I want, because users should never get a broken app because of my mistake. The failed run is my alarm, and I can fix the problem calmly. The trade-off is that the live version may be out of date until I fix the error, so I have to actually watch for red runs.
+
+- [x] What GitHub Actions permission(s) or secret(s) does your deploy workflow actually need, and where did you grant/store them? What's the security risk of over-granting permissions here?
+
+      I need three permissions, set in the permissions: block of deploy.yml: contents: read to check out my code, pages: write to publish to GitHub Pages, and id-token: write so the deploy action can prove its identity to Pages. I don't need any secrets. The workflow uses the temporary GITHUB_TOKEN that GitHub creates for each run, so I never stored a password or key anywhere.
+
+      Other places that matter are in the repo settings: Settings → Pages, where the source is set to 'GitHub Actions', and the github-pages environment, which records deployments and can restrict which branches may deploy.
+
+      Over-granting is risky because that token is available to every step in the job, including third-party actions. If one of them were compromised, or a malicious pull request changed the workflow, a token with contents: write could push code or change the repo, and a broader token could do even more. Least privilege means giving only what's needed, so a mistake or an attack can do as little damage as possible
+
+- [x] What's the difference between triggering a workflow `on: push`, `on: pull_request`, and `on: workflow_dispatch`? Which did you use for the development workflow (Demo 8) and which for the deployment workflow (Demo 9), and why is that pairing the right one?
+
+      on: push runs when commits are pushed to a branch. on: pull_request runs when a pull request is opened or updated, and tests the result of merging it. on: workflow_dispatch adds a manual 'Run workflow' button, so I can start it by hand without a commit.
+
+      For the development workflow in Demo 8 I used push and pull_request. I want quick feedback on every branch and every proposed change before it gets merged. For the deployment workflow in Demo 9 I used push to main only. Only code that has landed on main should be published. Deploying from every branch or pull request would publish unreviewed code, and pull requests from other people shouldn't be able to trigger a deployment with permissions.
+
+      So the pairing is: broad, cheap, unprivileged checks for development, and a narrow, privileged trigger for deployment. A manual workflow_dispatch button could be added to the deploy workflow too, to redeploy without a new commit
+
 
 ---
 
