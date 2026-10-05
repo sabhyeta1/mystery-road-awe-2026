@@ -46,3 +46,5 @@ function initApp() {
 
 window.addEventListener("DOMContentLoaded", initApp);
 window.addEventListener("hashchange", handleHashChange);
+
+var oops = 1;
