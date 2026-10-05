@@ -2,8 +2,11 @@ export function formatDate(ts) {
   if (!ts) return "Unknown date";
   const d = new Date(ts);
   if (isNaN(d.getTime())) return ts;
-  return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) +
-    " " + d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+  return (
+    d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) +
+    " " +
+    d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })
+  );
 }
 
 export const getStatusBadgeClass = (status) => {
@@ -27,7 +30,13 @@ export function certaintyBadgeClass(certainty) {
 }
 
 export function statCardHTML(value, label) {
-  return '<div class="stat-card"><div class="stat-value">' + value + '</div><div class="stat-label">' + label + "</div></div>";
+  return (
+    '<div class="stat-card"><div class="stat-value">' +
+    value +
+    '</div><div class="stat-label">' +
+    label +
+    "</div></div>"
+  );
 }
 
 export function statusOptionHTML(current, value, label) {
