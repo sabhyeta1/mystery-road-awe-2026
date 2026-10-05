@@ -218,15 +218,24 @@ ticked. The table above is just a fast overview, tick the boxes inside each demo
 
 **Tasks**
 
-- [ ] Install TypeScript and add a `tsconfig.json`. Deliberately choose your strictness settings (don't just copy a default blindly) and be ready to justify at least one setting you turned on or left off.
-- [ ] Convert 2–3 of your smallest/utility modules from Exercise 1 (e.g. formatting or lookup helpers) from `.js` to `.ts`, with **no `any`**, and get them compiling with zero errors.
-- [ ] Wire TypeScript into your `build`/`dev` scripts from Demo 4 so type errors are actually surfaced by your tooling, not just by your editor.
+- [x] Install TypeScript and add a `tsconfig.json`. Deliberately choose your strictness settings (don't just copy a default blindly) and be ready to justify at least one setting you turned on or left off.
+- [x] Convert 2–3 of your smallest/utility modules from Exercise 1 (e.g. formatting or lookup helpers) from `.js` to `.ts`, with **no `any`**, and get them compiling with zero errors.
+- [x] Wire TypeScript into your `build`/`dev` scripts from Demo 4 so type errors are actually surfaced by your tooling, not just by your editor.
 
 **Questions** (depend on the tasks above)
 
-- [ ] What does the `strict` option in `tsconfig.json` actually turn on? Name at least two individual checks bundled under it, and say whether you kept it on and why.
-- [ ] What is the difference between a compile-time type error and the runtime bugs you fixed in Exercise 1? Could TypeScript alone have caught any of those specific bugs? Why or why not?
-- [ ] What does `any` do to TypeScript's checking for a value, and why did you avoid it in this first pass even though it would have been faster to just silence the errors with it?
+- [x] What does the `strict` option in `tsconfig.json` actually turn on? Name at least two individual checks bundled under it, and say whether you kept it on and why.
+
+      strict: true is a shortcut that turns on a group of strict checks at once. Two of them are noImplicitAny, which forbids parameters or values from silently becoming any (I saw this error in format.ts before I added types), and strictNullChecks, which stops null and undefined from being allowed everywhere, so I have to declare things like string | null | undefined. The group also includes strictFunctionTypes and strictPropertyInitialization, among others. I kept it on, because the whole point of moving to TypeScript is to catch mistakes early. Turning it off would give me types that don't protect me. It is also easier to start strict than to switch it on later when there is more code.
+
+- [x] What is the difference between a compile-time type error and the runtime bugs you fixed in Exercise 1? Could TypeScript alone have caught any of those specific bugs? Why or why not?
+
+      compile-time type error is found by analysing the code before it runs, and a runtime bug only appears while the app runs, with real data and timing. TypeScript can catch bugs of the type 'wrong kind of value': calling a function with the wrong argument, using something that might be undefined, or misspelling a property name. It can't catch problems about timing or logic. For example, the never-awaited promise in main.js from Exercise 1 is valid TypeScript, because it is a legal value, just used wrongly. Catching that would need an extra lint rule. Bugs that depend on the order things happen in, or on what the data contains at runtime, also can't be seen by types
+
+- [x] What does `any` do to TypeScript's checking for a value, and why did you avoid it in this first pass even though it would have been faster to just silence the errors with it?
+
+      any turns off type checking for a value: TypeScript will accept anything you do with it, so errors go back to being runtime errors. It also spreads. Anything derived from an any value tends to become any. I avoided it because using it to silence errors would only hide them and defeat the purpose of the migration. It would have been faster to type any everywhere, but then I'd have TypeScript syntax without the safety. I also turned on an ESLint rule (no-explicit-any, in typescript-eslint's recommended rules) that flags it, which I demonstrated.
+
 
 ---
 

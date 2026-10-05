@@ -1,4 +1,4 @@
-export function formatDate(ts) {
+export function formatDate(ts: string | null | undefined): string {
   if (!ts) return "Unknown date";
   const d = new Date(ts);
   if (isNaN(d.getTime())) return ts;
@@ -9,27 +9,27 @@ export function formatDate(ts) {
   );
 }
 
-export const getStatusBadgeClass = (status) => {
+export const getStatusBadgeClass = (status: string | null | undefined): string => {
   const s = (status || "").toLowerCase();
   if (s === "reviewed") return "badge-reviewed";
   if (s === "flagged") return "badge-flagged";
   return "badge-unreviewed";
 };
 
-export const getRelevanceBadgeClass = (relevance) => {
+export const getRelevanceBadgeClass = (relevance: string | null | undefined): string => {
   const r = (relevance || "").toLowerCase();
   if (r === "relevant") return "badge-relevant";
   return "badge-unreviewed";
 };
 
-export function certaintyBadgeClass(certainty) {
+export function certaintyBadgeClass(certainty: string): string {
   if (certainty === "confirmed") return "reviewed";
   if (certainty === "contradictory") return "critical";
   if (certainty === "reported") return "flagged";
   return "unreviewed";
 }
 
-export function statCardHTML(value, label) {
+export function statCardHTML(value: string, label: string) {
   return (
     '<div class="stat-card"><div class="stat-value">' +
     value +
@@ -39,7 +39,7 @@ export function statCardHTML(value, label) {
   );
 }
 
-export function statusOptionHTML(current, value, label) {
+export function statusOptionHTML(current: string | null | undefined, value: string, label: string) {
   const currentLower = (current || "").toLowerCase();
   const selected = currentLower === value ? " selected" : "";
   return '<option value="' + value + '"' + selected + ">" + label + "</option>";
