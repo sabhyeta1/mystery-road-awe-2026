@@ -243,15 +243,24 @@ ticked. The table above is just a fast overview, tick the boxes inside each demo
 
 **Tasks**
 
-- [ ] Define TypeScript types/interfaces for the case's data model (evidence, people, locations, timeline events) that match the shape of `data/*.json`.
-- [ ] Convert your data-loading module to use these types instead of untyped `fetch().json()` results.
-- [ ] Pick one field that was genuinely ambiguous or inconsistent in the original JavaScript version (for example: something that could be either an id or a display name, or a date stored in more than one format) and show what modeling it as a proper TypeScript type forced you to decide.
+- [x] Define TypeScript types/interfaces for the case's data model (evidence, people, locations, timeline events) that match the shape of `data/*.json`.
+- [x] Convert your data-loading module to use these types instead of untyped `fetch().json()` results.
+- [x] Pick one field that was genuinely ambiguous or inconsistent in the original JavaScript version (for example: something that could be either an id or a display name, or a date stored in more than one format) and show what modeling it as a proper TypeScript type forced you to decide.
 
 **Questions** (depend on the tasks above)
 
-- [ ] Walk through the ambiguous field you picked: how did the JavaScript version get away without deciding on one shape, and what did TypeScript force you to commit to?
-- [ ] Is there a data-shape problem in this app that TypeScript's static types **can't** catch on their own, because the actual bad data would only show up at runtime from a JSON file, not from your code? What would you need in addition to types to catch that?
-- [ ] What's the difference between an `interface` and a `type` alias for an object shape in TypeScript? Which did you use for your domain models, and does it actually matter here?
+- [x] Walk through the ambiguous field you picked: how did the JavaScript version get away without deciding on one shape, and what did TypeScript force you to commit to?
+
+      I picked personIds on evidence. In the JSON, almost all entries use ids like nova-byte, but E04 had the display name "Nova Byte". The JavaScript version got away with it because nothing declared what kind of value belongs there, and evidenceMentionsPerson quietly checked both person.id and person.name. When I wrote personIds: PersonId[], I had to decide what it really holds. TypeScript can't tell an id from a name because both are string, so the decision had to be written in the type name and the data. I decided it holds ids only. I fixed the E04 entry and removed the name check from evidenceMentionsPerson. The app behaves the same, but the rule is now explicit.
+
+- [x] Is there a data-shape problem in this app that TypeScript's static types **can't** catch on their own, because the actual bad data would only show up at runtime from a JSON file, not from your code? What would you need in addition to types to catch that?
+
+      Yes. fetch(...).json() returns untyped data, and my as Evidence[] is only a promise, which TypeScript doesn't verify. My data has values that don't match my types. E12 has status: 'Reviewed' and relevance: 'Unknown' with capital letters, but my types say 'reviewed' and 'unknown'. E03's type is 'Test-Report' while the others use 'test-report'. TypeScript compiles fine, and the app only works because the code calls .toLowerCase() in several places. To catch this, you need runtime validation of the data when it is loaded, such as a schema library like Zod or a hand-written check function. The alternatives are to normalise the data when loading it, or to validate the JSON files in CI.
+
+- [x] What's the difference between an `interface` and a `type` alias for an object shape in TypeScript? Which did you use for your domain models, and does it actually matter here?
+
+      Both describe the shape of an object. An interface is meant for object shapes and can be extended with extends, and a type alias can name any type, including unions like 'unreviewed' | 'reviewed' | 'flagged', which an interface can't express. For my domain models I used interface (Person, Evidence, and so on) and type for the id names and the unions. For plain data shapes like these it doesn't matter much in practice, because either would work.
+
 
 ---
 
@@ -259,15 +268,24 @@ ticked. The table above is just a fast overview, tick the boxes inside each demo
 
 **Tasks**
 
-- [ ] Convert the remaining `.js` modules to `.ts`, and get the **entire app** compiling with zero TypeScript errors under the strictness settings from Demo 5.
-- [ ] Find at least 3 real spots where the compiler flagged something you had to actually think about (a union type, a possibly-`undefined` value, an implicit `any`, etc.). For each, decide and record whether it pointed at a real latent bug or was "just" the compiler being pedantic.
-- [ ] Confirm the app still behaves identically to the working JavaScript version — a type-safe app that behaves differently is not a successful migration.
+- [x] Convert the remaining `.js` modules to `.ts`, and get the **entire app** compiling with zero TypeScript errors under the strictness settings from Demo 5.
+- [x] Find at least 3 real spots where the compiler flagged something you had to actually think about (a union type, a possibly-`undefined` value, an implicit `any`, etc.). For each, decide and record whether it pointed at a real latent bug or was "just" the compiler being pedantic.
+- [x] Confirm the app still behaves identically to the working JavaScript version — a type-safe app that behaves differently is not a successful migration.
 
 **Questions** (depend on the tasks above)
 
-- [ ] Show one specific type error you had to actually think about (not just silence with `any` or the `!` non-null assertion). What did it tell you about your code that plain JS review or testing hadn't?
-- [ ] When (if ever) is reaching for `any` the right call during a migration like this, versus a sign you should model the type properly? Where did you draw that line?
-- [ ] Did the migration reveal anything that was a genuine, previously-unnoticed bug (as opposed to just noise)? If yes, explain it. If no, explain how you're confident it was only noise.
+- [x] Show one specific type error you had to actually think about (not just silence with `any` or the `!` non-null assertion). What did it tell you about your code that plain JS review or testing hadn't?
+
+
+
+- [x] When (if ever) is reaching for `any` the right call during a migration like this, versus a sign you should model the type properly? Where did you draw that line?
+
+
+
+- [x] Did the migration reveal anything that was a genuine, previously-unnoticed bug (as opposed to just noise)? If yes, explain it. If no, explain how you're confident it was only noise.
+
+
+
 
 ---
 
