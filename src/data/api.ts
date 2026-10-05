@@ -1,17 +1,23 @@
 import { state } from "../state/store.js";
+import type { CaseInfo, CaseLocation, Evidence, Person, TimelineEvent } from "../types/domain.js";
 import { renderDashboard } from "../views/dashboard.js";
 import { populateAllDropdowns } from "../views/dropdowns.js";
 import { renderEvidenceList, applyStoredBookmarkFlags } from "../views/evidence.js";
 import { renderTimeline } from "../views/timeline.js";
 
-export function showLoadingOverlay(msg) {
+async function fetchJson<T>(path: string): Promise<T> {
+  const res = await fetch(path);
+  return (await res.json()) as T;
+}
+
+export function showLoadingOverlay(msg: string): void {
   const overlay = document.getElementById("loadingOverlay");
   const text = document.getElementById("loadingText");
   if (text) text.textContent = msg;
   if (overlay) overlay.classList.remove("hidden");
 }
 
-export function hideLoadingStep() {
+export function hideLoadingStep(): void {
   state.loadingStepsRemaining--;
   if (state.loadingStepsRemaining <= 0) {
     const overlay = document.getElementById("loadingOverlay");
@@ -19,26 +25,19 @@ export function hideLoadingStep() {
   }
 }
 
-async function loadCorePeopleAndLocations() {
-  const caseRes = await fetch("data/case.json");
-  state.caseData = await caseRes.json();
-
-  const peopleRes = await fetch("data/people.json");
-  state.allPeople = await peopleRes.json();
-
-  const locationsRes = await fetch("data/locations.json");
-  state.allLocations = await locationsRes.json();
+async function loadCorePeopleAndLocations(): Promise<void> {
+  state.caseData = await fetchJson<CaseInfo>("data/case.json");
+  state.allPeople = await fetchJson<Person[]>("data/people.json");
+  state.allLocations = await fetchJson<CaseLocation[]>("data/locations.json");
 
   hideLoadingStep();
   renderDashboard();
   populateAllDropdowns();
 }
 
-async function loadEvidenceData() {
+async function loadEvidenceData(): Promise<void> {
   try {
-    const res = await fetch("data/evidence.json");
-    const data = await res.json();
-    state.allEvidence = data;
+    state.allEvidence = await fetchJson<Evidence[]>("data/evidence.json");
     state.evidenceViewLoading = false;
     applyStoredBookmarkFlags();
     state.filteredEvidence = state.allEvidence.slice();
@@ -51,11 +50,8 @@ async function loadEvidenceData() {
   }
 }
 
-function loadTimelineData() {
-  return fetch("data/timeline.json")
-    .then(function (res) {
-      return res.json();
-    })
+function loadTimelineData(): Promise<void> {
+  return fetchJson<TimelineEvent[]>("data/timeline.json")
     .then(function (data) {
       state.allTimeline = data;
       renderDashboard();
@@ -70,7 +66,7 @@ function loadTimelineData() {
     });
 }
 
-export function loadAllData() {
+export function loadAllData(): Promise<void> {
   showLoadingOverlay("Loading case file…");
   state.loadingStepsRemaining = 2;
   return loadCorePeopleAndLocations().then(function () {
