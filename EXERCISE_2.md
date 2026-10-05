@@ -293,15 +293,37 @@ ticked. The table above is just a fast overview, tick the boxes inside each demo
 
 **Tasks**
 
-- [ ] Write a GitHub Actions workflow that triggers on push (and/or pull request), checks out the repo, sets up Node.js at the right version, installs dependencies (with dependency caching), and runs your `lint` and a format-check (e.g. `prettier --check`).
-- [ ] Push a commit that deliberately fails lint or format, and show the workflow **failing** in the Actions tab.
-- [ ] Fix it and push again, and show the same workflow **passing**.
+- [x] Write a GitHub Actions workflow that triggers on push (and/or pull request), checks out the repo, sets up Node.js at the right version, installs dependencies (with dependency caching), and runs your `lint` and a format-check (e.g. `prettier --check`).
+- [x] Push a commit that deliberately fails lint or format, and show the workflow **failing** in the Actions tab.
+- [x] Fix it and push again, and show the same workflow **passing**.
 
 **Questions** (depend on the tasks above)
 
-- [ ] What is the difference between a workflow, a job, and a step in GitHub Actions? Point to one of each in your workflow file.
-- [ ] Why should lint/format run in CI at all, if it already runs (or could run) on every developer's own machine before they push?
-- [ ] What is dependency caching doing in your workflow, and what would happen (both correctness- and speed-wise) if you removed it?
+- [x] What is the difference between a workflow, a job, and a step in GitHub Actions? Point to one of each in your workflow file.
+
+      A workflow is the whole automation. It's one YAML file in .github/workflows/. In my repo that's ci.yml, and its name is on the first line: name: CI. It says when to run (my on: push and pull_request triggers) and contains one or more jobs.
+
+      A job is a group of steps that runs together on one fresh virtual machine, called a runner. My workflow has one job, lint-and-format, which runs on ubuntu-latest. If I had a second job, it would run on a separate machine, in parallel by default, and wouldn't share files with the first one unless I passed them over explicitly.
+
+      A step is one single task inside a job, and steps run one after another. Each one is either a ready-made action (uses:) or a shell command (run:). For example, uses: actions/checkout@v4 downloads my code onto the machine, and run: npm run lint runs my lint script. If a step fails, the later steps are skipped and the job is marked as failed. That's what I saw in my deliberately broken run: the Lint step went red and the format check never ran.
+
+- [x] Why should lint/format run in CI at all, if it already runs (or could run) on every developer's own machine before they push?
+
+      Running them locally depends on every developer remembering to do it, and nothing forces that. git push doesn't check anything. CI makes the check automatic and the same for everybody.
+
+      It also runs on a clean machine. My laptop can have a stale node_modules, a different Node version, or an unsaved file. I actually had this when .gitignore wasn't saved and dist/ got committed. CI starts from an empty machine, gets only what's in git, installs from the lockfile and runs the checks. If it's green there, it doesn't depend on my setup.
+
+      Not everyone who changes the code uses my setup either. Someone could edit a file on GitHub's website or not have Prettier in their editor. CI still catches those mistakes. It also gives a visible green check or red X on every commit, and teams can block merging into main until it's green. And it's the base for deployment: in Demo 9 I don't want broken code published automatically.
+
+      Local checks are still useful, because they give feedback in seconds. Local is for speed, and CI is for guarantees.
+
+- [x] What is dependency caching doing in your workflow, and what would happen (both correctness- and speed-wise) if you removed it?
+
+      A dependency is a package my project needs from npm, like Vite, TypeScript and ESLint. The runner is a brand-new empty machine on every run, so without caching it would download all of them again every time.
+
+      cache: npm in the setup-node step makes GitHub save npm's download cache after a successful run. The cache is stored under a key based on a hash of package-lock.json. On the next run, if the key matches (a cache hit), the cache is restored and npm ci doesn't need to download the packages again. If I change the lockfile, the hash changes, there's a cache miss, and a fresh cache is built. So I never get stale packages. In the Actions log, the Set up Node.js step shows 'Cache not found' on the first run and 'Cache restored' on later runs.
+
+      If I removed it, correctness wouldn't change. npm ci installs exactly what the lockfile says, with or without a cache, so the cache is purely an optimization. Speed would get worse: every run would re-download everything. On my small project that's a few seconds, but on a big project it can be minutes per run, and it uses up more of my free GitHub minutes
 
 ---
 
