@@ -331,15 +331,27 @@ ticked. The table above is just a fast overview, tick the boxes inside each demo
 
 **Tasks**
 
-- [ ] Write a second workflow that, on push to your main branch (or another trigger you choose and can justify), checks out the repo, installs dependencies, lints, builds (`vite build`), and deploys the `dist/` output to GitHub Pages (or an equivalent static host).
-- [ ] Confirm the deployed URL actually serves the working app end-to-end, not just that the workflow reports success.
-- [ ] Make a real change, push it, and show it going live via the workflow without any manual deployment step.
+- [x] Write a second workflow that, on push to your main branch (or another trigger you choose and can justify), checks out the repo, installs dependencies, lints, builds (`vite build`), and deploys the `dist/` output to GitHub Pages (or an equivalent static host).
+- [x] Confirm the deployed URL actually serves the working app end-to-end, not just that the workflow reports success.
+- [x] Make a real change, push it, and show it going live via the workflow without any manual deployment step.
 
 **Questions** (depend on the tasks above)
 
-- [ ] Why does the deploy workflow re-run lint and build itself, instead of trusting "it already passed on my machine" or reusing Demo 8's workflow's result directly?
-- [ ] What is the actual mechanism your deploy workflow uses to publish to GitHub Pages (e.g. a dedicated deploy action publishing an artifact, pushing to a `gh-pages` branch, or something else)? Explain, concretely, what it does.
-- [ ] What would you need to change in this workflow if you were deploying to a different static host instead (e.g. Netlify, Vercel, a plain server over SFTP)? What would stay the same?
+- [x] Why does the deploy workflow re-run lint and build itself, instead of trusting "it already passed on my machine" or reusing Demo 8's workflow's result directly?
+
+      It passed on my machine' isn't evidence, because my laptop can have a stale node_modules, a different Node version or unsaved files. The deploy workflow builds on a clean machine from exactly the commit on main, so what gets published is proven to build from what's in git.
+
+      I also can't reuse Demo 8's result directly. Workflows are separate: they run in separate runners and don't share results or files. Demo 8 ran on a particular commit and maybe on another branch, and the deploy workflow has to be sure about this commit on main. Lint and build are also cheap, a few seconds, while deploying broken code to real users is expensive. The deploy workflow guards itself. The alternative would be to chain workflows (for example with workflow_run), but that couples them together, and then the deploy depends on another workflow's state.
+
+- [x] What is the actual mechanism your deploy workflow uses to publish to GitHub Pages (e.g. a dedicated deploy action publishing an artifact, pushing to a `gh-pages` branch, or something else)? Explain, concretely, what it does.
+
+      I use GitHub's official Pages actions, and no gh-pages branch. In the build job, actions/upload-pages-artifact packs my dist/ folder into a compressed archive and uploads it as a workflow artifact, a file that's stored with the run. In the second job, actions/deploy-pages takes that artifact and tells GitHub Pages to publish it. To be allowed to do that, the job uses a short-lived token, which is why I set pages: write and id-token: write in permissions:. The Pages source in my repo settings is set to 'GitHub Actions' instead of 'Deploy from a branch.' The environment: github-pages also records each deployment, and its url shows the live address.
+
+- [x] What would you need to change in this workflow if you were deploying to a different static host instead (e.g. Netlify, Vercel, a plain server over SFTP)? What would stay the same?
+
+      Everything up to the build stays the same: checkout, setting up Node, npm ci, lint, vite build. I'd still be publishing the dist/ folder.
+
+      What changes is the last part. I'd replace the upload-pages-artifact and deploy-pages steps with that host's deploy step. For example, a Netlify or Vercel action or CLI, or an SFTP/rsync action for a plain server. I'd remove the pages: write and id-token: write permissions, which only apply to GitHub Pages. Instead I'd store credentials such as an API token or SSH key as an encrypted repository secret (Settings → Secrets) and read it in the workflow. I'd also revisit Vite's base setting: a host serving from a domain root would need / or the default, while a subfolder needs a matching path.
 
 ---
 
