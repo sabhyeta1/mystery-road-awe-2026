@@ -57,9 +57,14 @@ export function handleHashChange(): void {
     }
   }
 
+
+  // state.viewRendered remembers which views have already been drawn.
+  // On a view's FIRST visit it is false, so we build the HTML and flip the flag to true.
+  // On every later visit the flag is true, so we skip rendering and show the old HTML.
+  
   if (hash === "dashboard" && !state.viewRendered.dashboard) {
     renderers.renderDashboard();
-    state.viewRendered.dashboard = true;
+    state.viewRendered.dashboard = true; // from now on the dashboard is never redrawn
   } else if (hash === "evidence" && !state.viewRendered.evidence) {
     renderers.renderEvidenceList();
     state.viewRendered.evidence = true;
@@ -71,6 +76,8 @@ export function handleHashChange(): void {
     renderers.renderTimeline();
     state.viewRendered.timeline = true;
   } else if (hash === "workspace") {
+    // No flag here: the workspace is redrawn on EVERY visit, so it always
+    // shows the current bookmarks and notes. This is the contrast to the dashboard.
     renderers.renderWorkspace();
   }
 }

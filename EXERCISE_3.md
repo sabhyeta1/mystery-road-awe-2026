@@ -57,8 +57,9 @@ ticked — the table above is just a fast overview, tick the boxes inside each d
 
     ![Evolution of web architectures](docs/images/evolution-timeline.png)
 
-    I'd place my app at the CSR / SPA stage of the evolution. The server only sends an application shell, and JavaScript fetches the JSON and renders every view, with a client-side router and long-lived state in memory. It has no framework, though, so it also shows the problems of the earlier AJAX stage. I update the DOM by hand with innerHTML, and I manage state myself in a global state object. That's why it makes sense to migrate it to React. The manuscript also stresses that the stages don't replace each other. Each is a different set of trade-offs.
-
+    I'd place my app at the CSR / SPA stage of the evolution. The server only sends an empty application shell (`index.html` with empty containers like `#dashboardContent`), and JavaScript fetches the JSON files and builds every view in the browser. It's a single page because the browser loads one document and my hash router (`handleHashChange()`) switches views without reloading it, so the data and state stay in memory. It has no framework, so I update the DOM by hand with `innerHTML` and manage state in a global `state` object, which is why it still shows the problems of the AJAX stage. That's why it makes sense to migrate it to React.
+    
+    TLDR: the server sends an empty shell, the browser builds all the content, and one document handles all navigation, so it's CSR / SPA.
     
 
 **Questions** (depend on the tasks above)
