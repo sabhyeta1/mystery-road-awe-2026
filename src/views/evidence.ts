@@ -243,6 +243,7 @@ function simulateAsyncSearch(term: string): Promise<string> {
 export function handleSearchInput(event: Event): void {
   if (!(event.target instanceof HTMLInputElement)) return;
   const term = event.target.value;
+  // (Ex3, Demo1, Q1, Bsp1)
   // Every keystroke starts a new search, and async responses can arrive out of order.
   // Step 1: give this search a number by incrementing the shared counter.
   state.latestSearchRequestId = (state.latestSearchRequestId || 0) + 1;

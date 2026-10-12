@@ -45,4 +45,6 @@ function initApp() {
 }
 
 window.addEventListener("DOMContentLoaded", initApp);
+//(Ex3, Demo1, Q2)
+// Listens for the hash changing
 window.addEventListener("hashchange", handleHashChange);
