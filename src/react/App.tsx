@@ -6,12 +6,14 @@ import { PeoplePage } from "./pages/PeoplePage";
 import { TimelinePage } from "./pages/TimelinePage";
 import { WorkspacePage } from "./pages/WorkspacePage";
 import { useHashView } from "./useHashView";
+import { useCaseData } from "./useCaseData";
+import type { LoadState } from "./useCaseData";
 import type { ViewName } from "./views";
 
-function renderPage(view: ViewName) {
+function renderPage(view: ViewName, loadState: LoadState, navigateTo: (view: ViewName) => void) {
   switch (view) {
     case "dashboard":
-      return <DashboardPage />;
+      return <DashboardPage loadState={loadState} onNavigate={navigateTo} />;
     case "evidence":
       return <EvidencePage />;
     case "people":
@@ -25,11 +27,12 @@ function renderPage(view: ViewName) {
 
 export function App() {
   const [currentView, navigateTo] = useHashView();
+  const loadState = useCaseData();
 
   return (
     <>
       <AppHeader currentView={currentView} onNavigate={navigateTo} />
-      <main className="app-main">{renderPage(currentView)}</main>
+      <main className="app-main">{renderPage(currentView, loadState, navigateTo)}</main>
       <AppFooter />
     </>
   );
