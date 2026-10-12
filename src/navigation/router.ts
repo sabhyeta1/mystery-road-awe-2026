@@ -39,15 +39,16 @@ export function handleHashChange(): void {
   }
   const renderers = viewRenderers;
 
-  const requested = window.location.hash.replace("#", "");
-  const hash: ViewName = isViewName(requested) ? requested : "dashboard";
+  //(Ex3, Demo1, Q2)
+  const requested = window.location.hash.replace("#", ""); //reads view name from the URL hash, e.g. "#evidence" becomes "evidence"
+  const hash: ViewName = isViewName(requested) ? requested : "dashboard"; //if the hash is not a valid view name, default to "dashboard"
   state.currentPage = hash;
 
   const sections = document.querySelectorAll(".view");
   for (let i = 0; i < sections.length; i++) {
-    sections[i].classList.remove("active");
+    sections[i].classList.remove("active"); //hide all views making them inactive
   }
-  getEl("view-" + hash).classList.add("active");
+  getEl("view-" + hash).classList.add("active"); //show the requested view by making it active
 
   const navButtons = document.querySelectorAll(".nav-btn");
   for (let n = 0; n < navButtons.length; n++) {
@@ -57,11 +58,11 @@ export function handleHashChange(): void {
     }
   }
 
-
+  // (Ex3, Demo1, Q1, Bsp2)
   // state.viewRendered remembers which views have already been drawn.
   // On a view's FIRST visit it is false, so we build the HTML and flip the flag to true.
   // On every later visit the flag is true, so we skip rendering and show the old HTML.
-  
+
   if (hash === "dashboard" && !state.viewRendered.dashboard) {
     renderers.renderDashboard();
     state.viewRendered.dashboard = true; // from now on the dashboard is never redrawn
