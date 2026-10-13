@@ -18,14 +18,18 @@ export function PersonCard({ person, evidenceCount }: PersonCardProps) {
       <p>
         <strong>Speciality:</strong> {person.speciality}
       </p>
-      <ul>
-        {person.responsibilities.map((item) => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
+      {person.responsibilities.length > 0 && (
+        <ul>
+          {person.responsibilities.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      )}
       <div className="person-statement">&ldquo;{person.statement}&rdquo;</div>
       <p>
-        {evidenceCount} related evidence item{evidenceCount === 1 ? "" : "s"}
+        {evidenceCount === 0
+          ? "No related evidence"
+          : evidenceCount + " related evidence item" + (evidenceCount === 1 ? "" : "s")}
       </p>
     </div>
   );

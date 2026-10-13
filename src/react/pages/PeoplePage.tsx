@@ -29,22 +29,30 @@ export function PeoplePage({ loadState }: PeoplePageProps) {
   return (
     <ViewSection title="People & Locations">
       <h3>People</h3>
-      <div className="people-grid">
-        {people.map((person) => (
-          <PersonCard
-            key={person.id}
-            person={person}
-            evidenceCount={evidence.filter((item) => item.personIds.includes(person.id)).length}
-          />
-        ))}
-      </div>
+      {people.length === 0 ? (
+        <p>No people on file for this case.</p>
+      ) : (
+        <div className="people-grid">
+          {people.map((person) => (
+            <PersonCard
+              key={person.id}
+              person={person}
+              evidenceCount={evidence.filter((item) => item.personIds.includes(person.id)).length}
+            />
+          ))}
+        </div>
+      )}
 
       <h3>Locations</h3>
-      <div className="locations-grid">
-        {locations.map((location) => (
-          <LocationCard key={location.id} location={location} />
-        ))}
-      </div>
+      {locations.length === 0 ? (
+        <p>No locations on file for this case.</p>
+      ) : (
+        <div className="locations-grid">
+          {locations.map((location) => (
+            <LocationCard key={location.id} location={location} />
+          ))}
+        </div>
+      )}
     </ViewSection>
   );
 }
