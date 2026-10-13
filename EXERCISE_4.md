@@ -145,13 +145,62 @@ These checkboxes are for self-checking. Don't forget to do the actual checking o
 
 **Tasks**
 
-- [ ] Deliberately use `key={index}` in one throwaway example, then demonstrate (e.g. by reordering or filtering the underlying array) a case where it produces a visibly wrong result, before replacing it with a real stable id.
+- [x] Deliberately use `key={index}` in one throwaway example, then demonstrate a case where it produces a visibly wrong result, before replacing it with a real stable id.
+
+    I made a temporary `KeyDemo` component with three rows (Signal Scholar, Kernel Colt, Nova Byte). Each row has a text box and the list is keyed with `key={index}`. A "Remove first" button drops the first item from the array.
+
+    **With `key={index}`:** I typed `hello` into the box next to Signal Scholar and clicked "Remove first". Signal Scholar disappeared, but `hello` was now sitting next to **Kernel Colt**. React thought the row at position 0 was still the same row and only changed its label.
+
+    **With `key={item.id}`:** I repeated the test. The whole Signal Scholar row disappeared together with its `hello`, and Kernel Colt's box stayed empty.
+
+    The demo uses `useState`, so it breaks this exercise's no-state rule. That's why it was only a throwaway. I deleted it afterwards, and the code is kept here for reference:
+
+    <details>
+    <summary>KeyDemo.tsx (the buggy version; the fix is <code>key={item.id}</code> and <code>items.map((item) =&gt; …)</code>)</summary>
+
+```tsx
+    import { useState } from "react";
+
+    const INITIAL_ITEMS = [
+      { id: "signal-scholar", name: "Signal Scholar" },
+      { id: "kernel-colt", name: "Kernel Colt" },
+      { id: "nova-byte", name: "Nova Byte" },
+    ];
+
+    export function KeyDemo() {
+      const [items, setItems] = useState(INITIAL_ITEMS);
+
+      return (
+        <section>
+          <h2>Key demo (throwaway)</h2>
+          <button type="button" onClick={() => setItems(items.slice(1))}>
+            Remove first
+          </button>
+          <ul>
+            {items.map((item, index) => (
+              <li key={index}>
+                {item.name} <input placeholder="type a note" />
+              </li>
+            ))}
+          </ul>
+        </section>
+      );
+    }
+```
+
+    </details>
 
 **Questions** (depend on the tasks above)
 
-- [ ] What goes wrong, concretely, when keys are missing, duplicated, or based on array index for a list that can reorder or filter?
-- [ ] The *original* vanilla version of this app had a real bug where one feature used an array index as an identifier instead of a stable id. Would that same mistake, ported directly into React as `key={index}`, have caused a symptom a user could notice, or only a console warning? Explain why.
-- [ ] All of this app's real data (people, locations, timeline events) already has stable ids. Is there ever a legitimate reason to use `key={index}` anyway? When?
+- [x] What goes wrong, concretely, when keys are missing, duplicated, or based on array index for a list that can reorder or filter?
+
+    React uses the key as the identity of each item. If the key is wrong, it matches new items to the wrong old ones.
+
+    - **Index keys:** the identity is the position, not the item. When I removed the first person, React saw "position 0 is still there, position 2 is gone". It reused the first row's DOM node for Kernel Colt, so the typed text stayed behind, and it removed the last row instead of the first. This hits anything that lives in the DOM or in the component rather than in the data: typed text, focus, scroll position, open/closed state, and the internal state of the component.
+    - **Missing keys:** React logs a warning and falls back to matching by position, so it behaves like index keys.
+    - **Duplicated keys:** React logs a warning, and two items can't be told apart. On updates, rows can be duplicated, skipped, or given the wrong state.
+
+- [x] The *original* vanilla version of this app had a real bug where one feature used an array index as an identifier instead of a stable id. Would that same mistake, ported directly into React as `key={index}`, have caused a symptom a user could notice, or only a console warning? Explain why.
 
 ---
 
@@ -159,13 +208,30 @@ These checkboxes are for self-checking. Don't forget to do the actual checking o
 
 **Tasks**
 
-- [ ] Classify every component you've built so far as either "presentational" or "feature/container". Explain why.
-- [ ] Find at least one component that's currently doing more than one job, and split it into two components with a clear boundary between them.
+- [x] Classify every component you've built so far as either "presentational" or "feature/container". Explain why.
+
+    | Kind | Components | Why |
+    |---|---|---|
+    | Presentational | `AppHeader`, `MainNav`, `AppFooter`, `IntroCard`, `HowToItem`, `CaseSummaryCard`, `StatCard`, `ReviewProgress`, `RecentEvidenceList`, `RecentTimelineList`, `StatusBadge`, `ViewSection`, `PersonCard`, `LocationCard`, `TimelineEventCard`, `PeopleList`, `LocationList` | Everything they render comes from their props. They don't fetch, read storage, or work out which data to show, so I could render any of them with hand-made props. |
+    | Feature / container | `App`, `DashboardPage`, `PeoplePage`, `TimelinePage` | They know where the data comes from and decide what to show. `App` runs `useHashView` and `useCaseData` and picks the page. `DashboardPage` filters evidence, counts reviewed items, computes the percentage, takes the 5 most recent items and reads the bookmark count from `localStorage`. `PeoplePage` and `TimelinePage` handle the loading and error states and derive values such as evidence counts per person and the location labels. |
+    | Placeholders | `EvidencePage`, `WorkspacePage` | Empty shells until Exercise 5. |
+
+- [x] Find at least one component that's currently doing more than one job, and split it into two components with a clear boundary between them.
+
+    `PeoplePage` was doing three jobs at once: handling the loading and error states, calculating how much evidence each person has, and laying out the people and location lists with their empty states. I split the layout part out into two new presentational components, `PeopleList` and `LocationList`. `PeoplePage` stays the feature component. It handles the load state, computes an `evidenceCounts` object (person id to number), and passes plain data down: `<PeopleList people={people} evidenceCounts={evidenceCounts} />` and `<LocationList locations={locations} />`. The page looks exactly the same as before, so this was a pure refactor.
 
 **Questions** (depend on the tasks above)
 
-- [ ] For the component you split: what was the single responsibility of each half after the split? If an implementation detail in one half changed, would that change affect the other half? Why or why not?
-- [ ] Give one concrete rule you used to decide "this belongs in a presentational component" versus "this belongs in a feature component."
+- [x] For the component you split: what was the single responsibility of each half after the split? If an implementation detail in one half changed, would that change affect the other half? Why or why not?
+
+    - **`PeoplePage` (feature):** get the data. It checks the load state and works out the evidence count for each person.
+    - **`PeopleList` and `LocationList` (presentational):** show the data. Given a list of people (and the counts) or locations, they render the cards in a grid, and show the empty-state message if the list is empty.
+
+    A change inside one half would not affect the other, as long as the props stay the same. If I changed how the counts are calculated (a different source, or a different way of counting), `PeopleList` wouldn't notice, because it still just receives `Record<PersonId, number>`. If I changed the grid, the empty-state text, or the `key`, `PeoplePage` wouldn't notice either. The only thing that couples them is the props interface (`PeopleListProps`). If I changed it, TypeScript would immediately show me every place I need to update.
+
+- [x] Give one concrete rule you used to decide "this belongs in a presentational component" versus "this belongs in a feature component."
+
+    My rule: **if the component could be rendered with hand-made props, and it doesn't need to know where the data came from, it is presentational.** As soon as a component has to look at `loadState`, join or filter several datasets (like counting evidence per person), call a hook, or read `localStorage`, that logic belongs in a feature component. It then hands the finished result down through props. For example, counting evidence stays in `PeoplePage`, while `PeopleList` just displays the number it receives.
 
 ---
 
