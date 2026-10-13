@@ -83,13 +83,34 @@ These checkboxes are for self-checking. Don't forget to do the actual checking o
 
 **Tasks**
 
-- [ ] Implement at least two real conditional-rendering cases in the views you're migrating. For example: an empty state (e.g. "no timeline events match" if applicable), and a state-dependent style/label (e.g. the active People/Locations tab, or a certainty badge's variant on a timeline event).
-- [ ] Use at least two different conditional-rendering techniques (e.g. a ternary, `&&`, early-return, or a lookup/mapping function) and be ready to justify which you used where.
+- [x] Implement at least two real conditional-rendering cases in the views you're migrating.
+
+    1. **Empty state in `PeoplePage`:** if `people.length === 0` the page shows "No people on file for this case." instead of an empty grid, and the same for locations.
+    2. **State-dependent label in `PersonCard`:** the evidence line shows "No related evidence" when the count is 0, and otherwise "N related evidence item(s)" with the correct singular or plural.
+    3. **Optional sections in the cards:** the responsibilities list in `PersonCard` and the "Contains:" list in `LocationCard` only render if the array has entries.
+    4. **Loading and error states:** `PeoplePage` shows "Loading case file…" or an error message instead of the content, depending on `loadState.status`.
+
+    I checked each branch by temporarily emptying `people.json`, `evidence.json`, and one `contains` array, and then restored the files with `git restore`.
+
+- [x] Use at least two different conditional-rendering techniques and be ready to justify which you used where.
+
+    - **Early return** for the loading and error states in `PeoplePage`. The whole page is different in those cases, so it's cleaner to return early than to wrap the entire normal layout in a condition.
+    - **Ternary (`? :`)** for the empty states and the evidence label. There are exactly two outcomes and one of them always has to be shown, so a ternary fits.
+    - **`&&`** for the optional lists in `PersonCard` and `LocationCard`. There is one outcome (show the list) and no "else" case, so `&&` is shorter than a ternary with `null`.
 
 **Questions** (depend on the tasks above)
 
-- [ ] Show one place where you used `condition && <Component />}` instead of a ternary. What would go wrong if `condition` were a number like `0` instead of a boolean and does that risk apply to your actual code?
-- [ ] Why might returning `null` from a component be preferable to returning an empty `<div>` in some cases? Did you use either, and why?
+- [x] Show one place where you used `condition && <Component />` instead of a ternary. What would go wrong if `condition` were a number like `0` instead of a boolean and does that risk apply to your actual code?
+
+    In `LocationCard` I wrote `{location.contains.length > 0 && (<>…the "Contains:" paragraph and the list…</>)}`. I used `&&` because there is nothing to show in the else case, so a ternary would need a pointless `: null`.
+
+    If the condition were the number `0`, `0 && <X />` evaluates to `0`, not to `false`. React skips `false`, `null` and `undefined`, but it **renders the number 0 as visible text**. So a stray "0" would appear on the page. This does not apply to my code, because I compare with `> 0`, which is always a real boolean. If I had written `{location.contains.length && (...)}`, any location with an empty list would have displayed a "0". Ways to avoid it are to compare explicitly (`> 0`), convert with `Boolean(...)`, or use a ternary with `null`.
+
+- [x] Why might returning `null` from a component be preferable to returning an empty `<div>` in some cases? Did you use either, and why?
+
+    Returning `null` renders nothing, so there is no element in the DOM. An empty `<div>` is a real element that stays in the page, and CSS can still give it margin, padding, a border, or a slot in a grid or flex layout. It also shows up in the DOM and for selectors like `:empty`. So `null` is the right way to say "show nothing here".
+
+    I did not return an empty `<div>` anywhere. I also didn't write `return null` directly. My `&&` expressions evaluate to `false` when the condition fails, and React renders `false` exactly like `null`, which is nothing. In `LocationCard` I wrapped the two elements in a Fragment (`<>…</>`) so no extra wrapper `<div>` is added. In `PeoplePage`, when a list is empty I render a short message in a `<p>` instead of an empty `.people-grid` container.
 
 ---
 
