@@ -1,8 +1,9 @@
+import { ViewSection } from "../components/ViewSection";
+
 export function TimelinePage() {
   return (
-    <section className="view active">
-      <h2>Timeline</h2>
+    <ViewSection title="Timeline">
       <p>Timeline page: coming soon.</p>
-    </section>
+    </ViewSection>
   );
 }

@@ -17,7 +17,7 @@ function renderPage(view: ViewName, loadState: LoadState, navigateTo: (view: Vie
     case "evidence":
       return <EvidencePage />;
     case "people":
-      return <PeoplePage />;
+      return <PeoplePage loadState={loadState} />;
     case "timeline":
       return <TimelinePage />;
     case "workspace":
