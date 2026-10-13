@@ -1,12 +1,12 @@
-import { IntroCard } from "../components/IntroCard";
-import { CaseSummaryCard } from "../components/CaseSummaryCard";
-import { StatCard } from "../components/StatCard";
-import { ReviewProgress } from "../components/ReviewProgress";
-import { RecentEvidenceList } from "../components/RecentEvidenceList";
-import { RecentTimelineList } from "../components/RecentTimelineList";
-import { readBookmarkCount } from "../bookmarks";
-import type { ViewName } from "../views";
-import type { LoadState } from "../useCaseData";
+import { IntroCard } from "./IntroCard";
+import { CaseSummaryCard } from "./CaseSummaryCard";
+import { StatCard } from "./StatCard";
+import { ReviewProgress } from "./ReviewProgress";
+import { RecentEvidenceList } from "./RecentEvidenceList";
+import { RecentTimelineList } from "./RecentTimelineList";
+import { readBookmarkCount } from "./bookmarks";
+import type { ViewName } from "../shell/views";
+import type { LoadState } from "../data/useCaseData";
 
 interface DashboardPageProps {
   loadState: LoadState;

@@ -1,5 +1,5 @@
 import { HowToItem } from "./HowToItem";
-import type { ViewName } from "../views";
+import type { ViewName } from "../shell/views";
 
 interface IntroCardProps {
   onNavigate: (view: ViewName) => void;

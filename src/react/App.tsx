@@ -1,14 +1,14 @@
-import { AppHeader } from "./components/AppHeader";
-import { AppFooter } from "./components/AppFooter";
-import { DashboardPage } from "./pages/DashboardPage";
-import { EvidencePage } from "./pages/EvidencePage";
-import { PeoplePage } from "./pages/PeoplePage";
-import { TimelinePage } from "./pages/TimelinePage";
-import { WorkspacePage } from "./pages/WorkspacePage";
-import { useHashView } from "./useHashView";
-import { useCaseData } from "./useCaseData";
-import type { LoadState } from "./useCaseData";
-import type { ViewName } from "./views";
+import { AppHeader } from "./shell/AppHeader";
+import { AppFooter } from "./shell/AppFooter";
+import { DashboardPage } from "./dashboard/DashboardPage";
+import { EvidencePage } from "./evidence/EvidencePage";
+import { PeoplePage } from "./people-locations/PeoplePage";
+import { TimelinePage } from "./timeline/TimelinePage";
+import { WorkspacePage } from "./workspace/WorkspacePage";
+import { useHashView } from "./shell/useHashView";
+import { useCaseData } from "./data/useCaseData";
+import type { LoadState } from "./data/useCaseData";
+import type { ViewName } from "./shell/views";
 
 function renderPage(view: ViewName, loadState: LoadState, navigateTo: (view: ViewName) => void) {
   switch (view) {

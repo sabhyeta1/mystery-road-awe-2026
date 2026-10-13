@@ -1,8 +1,8 @@
 import { ViewSection } from "../components/ViewSection";
-import { PeopleList } from "../components/PeopleList";
-import { LocationList } from "../components/LocationList";
+import { PeopleList } from "./PeopleList";
+import { LocationList } from "./LocationList";
 import type { PersonId } from "../../types/domain";
-import type { LoadState } from "../useCaseData";
+import type { LoadState } from "../data/useCaseData";
 
 interface PeoplePageProps {
   loadState: LoadState;

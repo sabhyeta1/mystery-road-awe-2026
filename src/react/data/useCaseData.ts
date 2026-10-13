@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { CaseInfo, CaseLocation, Evidence, Person, TimelineEvent } from "../types/domain";
+import type { CaseInfo, CaseLocation, Evidence, Person, TimelineEvent } from "../../types/domain";
 
 export interface CaseData {
   caseInfo: CaseInfo;

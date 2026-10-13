@@ -1,6 +1,6 @@
 import { ViewSection } from "../components/ViewSection";
-import { TimelineEventCard } from "../components/TimelineEventCard";
-import type { LoadState } from "../useCaseData";
+import { TimelineEventCard } from "./TimelineEventCard";
+import type { LoadState } from "../data/useCaseData";
 
 interface TimelinePageProps {
   loadState: LoadState;

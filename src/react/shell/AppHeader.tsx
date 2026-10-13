@@ -1,5 +1,5 @@
 import { MainNav } from "./MainNav";
-import type { ViewName } from "../views";
+import type { ViewName } from "./views";
 
 interface AppHeaderProps {
   currentView: ViewName;

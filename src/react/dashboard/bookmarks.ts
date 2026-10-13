@@ -1,4 +1,4 @@
-import { STORAGE_KEY_BOOKMARKS } from "../state/store";
+import { STORAGE_KEY_BOOKMARKS } from "../../state/store";
 
 export function readBookmarkCount(): number {
   try {

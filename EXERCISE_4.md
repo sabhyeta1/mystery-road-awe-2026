@@ -239,15 +239,40 @@ These checkboxes are for self-checking. Don't forget to do the actual checking o
 
 **Tasks**
 
-- [ ] Reorganize your React source into a feature-oriented structure (e.g. grouping by
-`people-locations/`, `timeline/`, `dashboard/`, shared `components/`, rather than one flat
-folder of files). Including the Dashboard and shell from Exercise 3.
-- [ ] Document the structure you landed on (a short `ARCHITECTURE.md` section or README snippet is enough) and the rule you used to decide what's "shared" versus "feature-local."
+- [x] Reorganize your React source into a feature-oriented structure, including the Dashboard and shell from Exercise 3.
+
+    I moved the flat `components/` and `pages/` folders into one folder per feature inside `src/react/`:
+
+    - `shell/`: `AppHeader`, `MainNav`, `AppFooter`, `useHashView.ts`, `views.ts`
+    - `dashboard/`: `DashboardPage` and all the components only the dashboard uses (`IntroCard`, `HowToItem`, `CaseSummaryCard`, `StatCard`, `ReviewProgress`, `RecentEvidenceList`, `RecentTimelineList`, `StatusBadge`, `bookmarks.ts`)
+    - `people-locations/`: `PeoplePage`, `PeopleList`, `PersonCard`, `LocationList`, `LocationCard`
+    - `timeline/`: `TimelinePage`, `TimelineEventCard`
+    - `evidence/` and `workspace/`: the placeholder pages for Exercise 5
+    - `data/`: `useCaseData.ts`
+    - `components/`: only the shared `ViewSection`
+
+    `App.tsx` and `main.tsx` stay at the top. Only the file locations and import paths changed, no logic, and the three views look and work exactly as before.
+
+- [x] Document the structure you landed on and the rule you used to decide what's "shared" versus "feature-local."
+
+    It is documented in the new `ARCHITECTURE.md` in the project root: the folder tree, the rule for shared versus feature-local, the dependency direction, and the two kinds of components. The rule is: **a file lives inside its feature folder until a second feature needs it. Only then does it move to `components/` (or `data/`).**
 
 **Questions** (depend on the tasks above)
 
-- [ ] What's the difference between organizing files "by type" (all components in one folder, all hooks in another) and "by feature"? What made you choose the structure you chose for this app specifically?
-- [ ] Where did you draw the line between a component that lives inside one feature folder and one that belongs in a shared/common folder? Give one real example of each from your own structure.
+- [x] What's the difference between organizing files "by type" and "by feature"? What made you choose the structure you chose for this app specifically?
+
+    **By type** means one folder per kind of file: all components in `components/`, all hooks in `hooks/`, all pages in `pages/`. **By feature** means one folder per part of the product, and each folder holds everything that part needs: its page, its components and its helpers.
+
+    My app is naturally split into views (Dashboard, People & Locations, Timeline, and later Evidence and Workspace), and almost every component belongs to exactly one of them. Before, my `components/` folder held around 17 files from three different views mixed together. To work on the Timeline I had to pick its files out of `components/` and `pages/`. Now everything for the Timeline is in `timeline/`. Adding, changing or deleting a view touches one folder. The Evidence and Workspace folders also already exist, waiting for Exercise 5. The trade-off is that I have to decide what counts as shared, which is why I wrote down a rule.
+
+- [x] Where did you draw the line between a component that lives inside one feature folder and one that belongs in a shared/common folder? Give one real example of each from your own structure.
+
+    The line is: **feature-local until a second feature needs it.**
+
+    - **Feature-local example:** `people-locations/PersonCard.tsx` is only used by the people list, so it stays in that folder. `dashboard/StatCard.tsx` is only used on the dashboard.
+    - **Shared example:** `components/ViewSection.tsx` is the page frame (the section with the `<h2>` title) used by both People & Locations and Timeline, so it lives in `components/`. `data/useCaseData.ts` is shared too, because every page uses its `LoadState` type.
+
+    `StatusBadge` is a borderline case. Only the Dashboard uses it today, so it lives in `dashboard/`. It moves to `components/` as soon as the Evidence page needs it.
 
 ---
 

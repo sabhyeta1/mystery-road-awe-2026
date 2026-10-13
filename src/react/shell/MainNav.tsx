@@ -1,5 +1,5 @@
-import { VIEWS } from "../views";
-import type { ViewName } from "../views";
+import { VIEWS } from "../shell/views";
+import type { ViewName } from "../shell/views";
 
 interface MainNavProps {
   currentView: ViewName;
