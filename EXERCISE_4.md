@@ -118,11 +118,26 @@ These checkboxes are for self-checking. Don't forget to do the actual checking o
 
 **Tasks**
 
-- [ ] Render the people list, the locations list, and the timeline events list, each as a mapped collection of components, each with a proper `key` prop.
+- [x] Render the people list, the locations list, and the timeline events list, each as a mapped collection of components, each with a proper `key` prop.
+
+    - **People:** in `PeoplePage`, `people.map((person) => <PersonCard key={person.id} ... />)`.
+    - **Locations:** in `PeoplePage`, `locations.map((location) => <LocationCard key={location.id} ... />)`.
+    - **Timeline events:** in `TimelinePage`, `timeline.map((event) => <TimelineEventCard key={event.id} ... />)`.
+
+    Each `key` is the stable `id` from the data, not the array index. The small lists inside the cards (responsibilities and contains) use the item text as the key, because those items have no id.
 
 **Questions** (depend on the tasks above)
 
-- [ ] What does React actually use `key` for internally?
+- [x] What does React actually use `key` for internally?
+
+    React uses `key` for **reconciliation**, the step where it compares the list it rendered last time with the new one to work out the smallest set of DOM changes. The `key` is the identity of each item, so React can tell which new element corresponds to which old one:
+
+    - **Same key, same type** as before: React reuses the existing component and its DOM node and only updates the props that changed. Any state inside that component stays with it.
+    - **New key:** React creates and mounts a new component.
+    - **Key no longer in the list:** React unmounts that component and removes its DOM node.
+    - **Same keys in a different order:** React moves the existing DOM nodes instead of rebuilding them.
+
+    Without keys, React falls back to matching by position, which goes wrong as soon as the list is reordered or filtered. Keys only need to be unique among siblings in the same list, not across the whole app. `key` is also not passed down as a prop, so the component can't read it as `props.key`. It exists only for React's bookkeeping. In my app, using the data's own ids means that if the Timeline is later filtered or sorted, React can still tell which card is which event.
 
 ---
 

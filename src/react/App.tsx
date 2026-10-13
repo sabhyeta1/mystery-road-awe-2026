@@ -19,7 +19,7 @@ function renderPage(view: ViewName, loadState: LoadState, navigateTo: (view: Vie
     case "people":
       return <PeoplePage loadState={loadState} />;
     case "timeline":
-      return <TimelinePage />;
+      return <TimelinePage loadState={loadState} />;
     case "workspace":
       return <WorkspacePage />;
   }
