@@ -1,3 +1,4 @@
+import { Badge } from "../components/Badge";
 import type { CaseInfo } from "../../types/domain";
 
 interface CaseSummaryCardProps {
@@ -9,7 +10,7 @@ export function CaseSummaryCard({ caseInfo }: CaseSummaryCardProps) {
     <div className="case-summary-card">
       <h3>{caseInfo.title}</h3>
       <p>
-        <span className="badge badge-flagged">{caseInfo.status.toUpperCase()}</span>
+        <Badge variant="flagged">{caseInfo.status.toUpperCase()}</Badge>
       </p>
       <p>{caseInfo.summary}</p>
     </div>

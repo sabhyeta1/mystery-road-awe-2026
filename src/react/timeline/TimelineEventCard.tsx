@@ -1,5 +1,13 @@
-import { certaintyBadgeClass, formatDate } from "../../utils/format";
-import type { TimelineEvent } from "../../types/domain";
+import { Badge } from "../components/Badge";
+import type { BadgeVariant } from "../components/Badge";
+import { formatDate } from "../../utils/format";
+import type { TimelineCertainty, TimelineEvent } from "../../types/domain";
+
+const CERTAINTY_VARIANT: Record<TimelineCertainty, BadgeVariant> = {
+  confirmed: "reviewed",
+  reported: "flagged",
+  contradictory: "critical",
+};
 
 interface TimelineEventCardProps {
   event: TimelineEvent;
@@ -11,9 +19,7 @@ export function TimelineEventCard({ event, locationLabels }: TimelineEventCardPr
     <div className={"timeline-event certainty-" + event.certainty}>
       <div className="timeline-time">
         {formatDate(event.time)}&nbsp;&middot;&nbsp;
-        <span className={"badge badge-" + certaintyBadgeClass(event.certainty)}>
-          {event.certainty}
-        </span>
+        <Badge variant={CERTAINTY_VARIANT[event.certainty]}>{event.certainty}</Badge>
       </div>
       <h3>{event.title}</h3>
       <p>{event.description}</p>

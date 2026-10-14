@@ -280,12 +280,38 @@ These checkboxes are for self-checking. Don't forget to do the actual checking o
 
 **Tasks**
 
-- [ ] Extract at least one presentational component that is genuinely reused in **two or more different places** in the app (e.g. a badge, a card shell, a button variant), with a typed props API that makes it flexible enough for both uses without becoming a special-cased mess.
+- [x] Extract at least one presentational component that is genuinely reused in two or more different places in the app, with a typed props API that makes it flexible enough for both uses without becoming a special-cased mess.
+
+    I extracted `Badge` (`components/Badge.tsx`), the small coloured label. It takes `variant: BadgeVariant` (a union type: `"reviewed" | "flagged" | "unreviewed" | "critical" | "relevant"`) and `children: ReactNode` for the text. It is used in three places:
+
+    1. `timeline/TimelineEventCard.tsx`: the certainty of a timeline event (confirmed, reported, contradictory).
+    2. `dashboard/RecentEvidenceList.tsx`: the review status of an evidence item.
+    3. `dashboard/CaseSummaryCard.tsx`: the status of the case ("OPEN").
+
+    Because the Dashboard and the Timeline both use it, it lives in the shared `components/` folder. The old `StatusBadge` became redundant, so I deleted it.
 
 **Questions** (depend on the tasks above)
 
-- [ ] Show the two (or more) places your reusable component is used. What varies between them via props, and what stays fixed inside the component itself? How did you decide where that line goes?
-- [ ] The original vanilla app had duplicated HTML-template code (the same card markup written out twice, slightly differently, in two functions). Compare that directly to what you just built. What does a reusable component give you that copy-pasted template strings didn't?
+- [x] Show the two (or more) places your reusable component is used. What varies between them via props, and what stays fixed inside the component itself? How did you decide where that line goes?
+
+    - Timeline: `<Badge variant={CERTAINTY_VARIANT[event.certainty]}>{event.certainty}</Badge>`
+    - Evidence list: `<Badge variant={item.status}>{item.status}</Badge>`
+    - Case summary: `<Badge variant="flagged">{caseInfo.status.toUpperCase()}</Badge>`
+
+    **What varies** (through props): the colour (`variant`) and the text (`children`). **What stays fixed** inside the component: the markup (a `<span>`) and the CSS naming (`badge` plus `badge-<variant>`).
+
+    I drew the line by asking what is the same in every use and what depends on the caller. The look is the same everywhere. The meaning is different. `Badge` knows nothing about timelines, evidence or cases. The translation from a domain value to a colour stays with the caller. For example, `TimelineEventCard` has a lookup table `CERTAINTY_VARIANT` that maps `confirmed` to `reviewed`, `reported` to `flagged` and `contradictory` to `critical`. If I had put that mapping into `Badge`, it would need a special case for every new kind of status. The `variant` union type also means a typo like `variant="reveiwed"` is a compile error.
+
+- [x] The original vanilla app had duplicated HTML-template code. Compare that directly to what you just built. What does a reusable component give you that copy-pasted template strings didn't?
+
+    In the vanilla app, the same badge markup was written out separately in many places: `dashboard.ts` (line 22 for the case status and line 60 for the evidence status), `evidence.ts` (lines 148, 150 and 152 for critical, status and relevance), and `timeline.ts` (line 67 for the certainty). Each was a hand-concatenated string like `'<span class="badge badge-' + … + '">'`, and each worked slightly differently. Some used a helper function (`getStatusBadgeClass`, `certaintyBadgeClass`), and some hard-coded the class.
+
+    A reusable component gives me:
+
+    - **One source of truth:** if the badge markup or class naming changes, I change one file instead of hunting through six strings and hoping I found all of them.
+    - **Type safety:** the `variant` prop only accepts the five valid values, whereas a string typo in a template string fails silently and the badge just loses its colour.
+    - **No manual string building:** there is no `'<span class="badge ' + … + '">'` to get wrong, and the text is escaped by JSX instead of being pasted into HTML.
+    - **Consistency:** every badge in the app is guaranteed to look and be built the same way.
 
 ---
 

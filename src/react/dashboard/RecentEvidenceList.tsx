@@ -1,4 +1,4 @@
-import { StatusBadge } from "./StatusBadge";
+import { Badge } from "../components/Badge";
 import type { Evidence } from "../../types/domain";
 
 interface RecentEvidenceListProps {
@@ -12,7 +12,8 @@ export function RecentEvidenceList({ evidence }: RecentEvidenceListProps) {
       {evidence.length === 0 && <p>No evidence loaded yet.</p>}
       {evidence.map((item) => (
         <div className="mini-list-item" key={item.id}>
-          <strong>{item.id}</strong> — {item.title} <StatusBadge status={item.status} />
+          <strong>{item.id}</strong> — {item.title}
+          <Badge variant={item.status}>{item.status}</Badge>
         </div>
       ))}
     </div>
