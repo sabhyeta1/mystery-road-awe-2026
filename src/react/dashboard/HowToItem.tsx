@@ -1,18 +1,20 @@
+import { Link } from "react-router";
+
 interface HowToItemProps {
   title: string;
   text: string;
   buttonLabel: string;
-  onGo: () => void;
+  to: string;
 }
 
-export function HowToItem({ title, text, buttonLabel, onGo }: HowToItemProps) {
+export function HowToItem({ title, text, buttonLabel, to }: HowToItemProps) {
   return (
     <div className="howto-item">
       <h4>{title}</h4>
       <p>{text}</p>
-      <button type="button" className="btn btn-secondary btn-small" onClick={onGo}>
+      <Link to={to} className="btn btn-secondary btn-small">
         {buttonLabel}
-      </button>
+      </Link>
     </div>
   );
 }

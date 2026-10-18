@@ -319,16 +319,36 @@ These checkboxes are for self-checking. Don't forget to do the actual checking o
 
 **Tasks**
 
-- [ ] Install a routing library (React Router or an equivalent of your choice, justified) and
+- [x] Install a routing library (React Router or an equivalent of your choice, justified) and
 replace the shell's placeholder navigation from Exercise 3 with real routes for at least Dashboard, People & Locations, and Timeline.
-- [ ] Convert the People/Locations tab toggle from local component state into two real,
+
+    I installed **React Router** (the `react-router` package, version 8) with `npm install react-router`. I chose it because it is the most widely used router for React, it has good TypeScript types, and it supports everything this exercise and the next ones need: nested routes, route parameters (`useParams`) and query parameters (`useSearchParams`).
+
+    I use `HashRouter` in `main.tsx`. The app is hosted on GitHub Pages, which only serves static files. With a normal `BrowserRouter`, reloading on `/team/people` would ask the server for a file that doesn't exist and give a 404. With `HashRouter` the route is after the `#`, which the browser never sends to the server, so reloads and bookmarks always work. The vanilla app also used `#` URLs.
+
+    The route table is in `App.tsx`: `/dashboard`, `/evidence`, `/team/people`, `/team/locations`, `/timeline`, `/workspace`, plus `/` and `/team`, which redirect. The old placeholder navigation is gone: `MainNav` now uses `NavLink` (which also tells me which link is active), the Dashboard's "Go to…" buttons are `Link`s, the `onNavigate` and `currentView` props were removed, and I deleted `useHashView.ts`. The paths are stored once in `shell/views.ts`.
+
+- [x] Convert the People/Locations tab toggle from local component state into two real,
 navigable, bookmarkable routes (e.g. `/team/people` and `/team/locations`) instead of a click handler that only changes what's shown without changing the URL.
+
+    In the vanilla app the toggle was `switchPeopleTab()`, which hid and showed the two panels with a click handler and never touched the URL. Now `/team` is a **nested route**: `TeamLayout` draws the page title and the tab bar and contains an `<Outlet />`, and the child routes `people` (`PeopleTab`) and `locations` (`LocationsTab`) are shown in that outlet. The two tabs in `TeamTabs` are `NavLink`s to `/team/people` and `/team/locations`, and the active tab is highlighted automatically. `/team` on its own redirects to `/team/people`. I checked that reloading on the Locations tab keeps me there and that the back button switches between the tabs.
 
 **Questions** (depend on the tasks above)
 
-- [ ] Why does making the People/Locations tab a real route (versus keeping it as internal
+- [x] Why does making the People/Locations tab a real route (versus keeping it as internal
 component state) matter for the user? Name a concrete capability the user gains.
-- [ ] What does your router do when the URL doesn't match any route you've defined? Compare this to how the vanilla app's `handleHashChange()` fell back to the dashboard for an invalid hash.
+
+    The URL becomes part of the app's state, so the user can **bookmark or share a link straight to the Locations tab**. With internal component state, the address stays the same for both tabs. A link could only open the default tab, and after a reload the user would always land on People again.
+
+    The user also gets a working **back button** (going back returns to the previous tab instead of leaving the whole page), the ability to **reload without losing their place**, and the ability to open a tab in a new browser tab. These all come from the browser's own navigation, which I don't have to rebuild. The URL is also a single source of truth: the highlighted tab and the content can't get out of sync, because both are derived from the URL.
+
+- [x] What does your router do when the URL doesn't match any route you've defined? Compare this to how the vanilla app's `handleHashChange()` fell back to the dashboard for an invalid hash.
+
+    I added a catch-all route with `path="*"`. React Router uses it only when no other route matches (more specific routes always win, regardless of order), and it shows my `NotFoundPage`: a "Page not found" message with a link back to the Dashboard. It also works for wrong child paths, like `#/team/xyz`. The URL in the address bar stays as the user typed it.
+
+    The vanilla `handleHashChange()` silently treated any invalid hash as the dashboard. That is forgiving, but it hides the problem: the user doesn't learn that the address was wrong, and the app shows content that doesn't belong to the URL they typed. My router version tells the user clearly that the page doesn't exist and offers a way out. The only redirect I kept is the deliberate one: `/` goes to `/dashboard`, and `/team` goes to `/team/people`, using `<Navigate replace />` so the back button doesn't get stuck on the redirecting address.
+
+---
 
 ---
 

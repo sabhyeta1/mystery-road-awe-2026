@@ -5,15 +5,13 @@ import { ReviewProgress } from "./ReviewProgress";
 import { RecentEvidenceList } from "./RecentEvidenceList";
 import { RecentTimelineList } from "./RecentTimelineList";
 import { readBookmarkCount } from "./bookmarks";
-import type { ViewName } from "../shell/views";
 import type { LoadState } from "../data/useCaseData";
 
 interface DashboardPageProps {
   loadState: LoadState;
-  onNavigate: (view: ViewName) => void;
 }
 
-export function DashboardPage({ loadState, onNavigate }: DashboardPageProps) {
+export function DashboardPage({ loadState }: DashboardPageProps) {
   if (loadState.status === "loading") {
     return (
       <section className="view active">
@@ -44,7 +42,7 @@ export function DashboardPage({ loadState, onNavigate }: DashboardPageProps) {
     <section className="view active">
       <h2>Case Dashboard</h2>
 
-      <IntroCard onNavigate={onNavigate} />
+      <IntroCard />
 
       <CaseSummaryCard caseInfo={caseInfo} />
 

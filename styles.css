@@ -819,3 +819,10 @@ a:focus-visible {
   .header-inner { flex-direction: column; align-items: flex-start; }
   .detail-field strong { min-width: auto; display: block; }
 }
+
+a.btn,
+a.nav-btn,
+a.tab-btn {
+  display: inline-block;
+  text-decoration: none;
+}

@@ -1,9 +1,6 @@
 import { HowToItem } from "./HowToItem";
+import { getViewPath } from "../shell/views";
 import type { ViewName } from "../shell/views";
-
-interface IntroCardProps {
-  onNavigate: (view: ViewName) => void;
-}
 
 const STEPS: { title: string; text: string; buttonLabel: string; target: ViewName }[] = [
   {
@@ -32,7 +29,7 @@ const STEPS: { title: string; text: string; buttonLabel: string; target: ViewNam
   },
 ];
 
-export function IntroCard({ onNavigate }: IntroCardProps) {
+export function IntroCard() {
   return (
     <div className="intro-card">
       <h3>How to use this portal</h3>
@@ -47,7 +44,7 @@ export function IntroCard({ onNavigate }: IntroCardProps) {
             title={step.title}
             text={step.text}
             buttonLabel={step.buttonLabel}
-            onGo={() => onNavigate(step.target)}
+            to={getViewPath(step.target)}
           />
         ))}
       </div>

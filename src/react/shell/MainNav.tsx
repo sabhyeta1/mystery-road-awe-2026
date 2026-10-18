@@ -1,23 +1,17 @@
-import { VIEWS } from "../shell/views";
-import type { ViewName } from "../shell/views";
+import { NavLink } from "react-router";
+import { VIEWS } from "./views";
 
-interface MainNavProps {
-  currentView: ViewName;
-  onNavigate: (view: ViewName) => void;
-}
-
-export function MainNav({ currentView, onNavigate }: MainNavProps) {
+export function MainNav() {
   return (
     <nav className="main-nav" aria-label="Main navigation">
       {VIEWS.map((view) => (
-        <button
+        <NavLink
           key={view.name}
-          type="button"
-          className={view.name === currentView ? "nav-btn active" : "nav-btn"}
-          onClick={() => onNavigate(view.name)}
+          to={view.path}
+          className={({ isActive }) => (isActive ? "nav-btn active" : "nav-btn")}
         >
           {view.label}
-        </button>
+        </NavLink>
       ))}
     </nav>
   );

@@ -1,38 +1,37 @@
+import { Navigate, Route, Routes } from "react-router";
 import { AppHeader } from "./shell/AppHeader";
 import { AppFooter } from "./shell/AppFooter";
 import { DashboardPage } from "./dashboard/DashboardPage";
 import { EvidencePage } from "./evidence/EvidencePage";
-import { PeoplePage } from "./people-locations/PeoplePage";
+import { TeamLayout } from "./people-locations/TeamLayout";
+import { PeopleTab } from "./people-locations/PeopleTab";
+import { LocationsTab } from "./people-locations/LocationsTab";
 import { TimelinePage } from "./timeline/TimelinePage";
 import { WorkspacePage } from "./workspace/WorkspacePage";
-import { useHashView } from "./shell/useHashView";
 import { useCaseData } from "./data/useCaseData";
-import type { LoadState } from "./data/useCaseData";
-import type { ViewName } from "./shell/views";
-
-function renderPage(view: ViewName, loadState: LoadState, navigateTo: (view: ViewName) => void) {
-  switch (view) {
-    case "dashboard":
-      return <DashboardPage loadState={loadState} onNavigate={navigateTo} />;
-    case "evidence":
-      return <EvidencePage />;
-    case "people":
-      return <PeoplePage loadState={loadState} />;
-    case "timeline":
-      return <TimelinePage loadState={loadState} />;
-    case "workspace":
-      return <WorkspacePage />;
-  }
-}
+import { NotFoundPage } from "./shell/NotFoundPage";
 
 export function App() {
-  const [currentView, navigateTo] = useHashView();
   const loadState = useCaseData();
 
   return (
     <>
-      <AppHeader currentView={currentView} onNavigate={navigateTo} />
-      <main className="app-main">{renderPage(currentView, loadState, navigateTo)}</main>
+      <AppHeader />
+      <main className="app-main">
+        <Routes>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<DashboardPage loadState={loadState} />} />
+          <Route path="/evidence" element={<EvidencePage />} />
+          <Route path="/team" element={<TeamLayout />}>
+            <Route index element={<Navigate to="/team/people" replace />} />
+            <Route path="people" element={<PeopleTab loadState={loadState} />} />
+            <Route path="locations" element={<LocationsTab loadState={loadState} />} />
+          </Route>
+          <Route path="/timeline" element={<TimelinePage loadState={loadState} />} />
+          <Route path="/workspace" element={<WorkspacePage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </main>
       <AppFooter />
     </>
   );

@@ -32,5 +32,24 @@ A file lives **inside its feature folder** until a **second feature needs it**. 
 
 ## Component kinds
 
-- **Feature (container) components** are the `*Page` components and `App`. They load or read data, derive values and pass plain props down.
+- **Feature (container) components** are the `*Page` components, `App`, and the route components of the People & Locations feature (`TeamLayout`, `PeopleTab`, `LocationsTab`). They load or read data, derive values and pass plain props down.
 - **Presentational components** (everything else) only render what their props describe.
+
+## Routing
+
+The app uses **React Router** in **hash mode** (`HashRouter` in `main.tsx`). Hash mode is used because the app is hosted on GitHub Pages, which is a static file host: a normal URL like `/team/people` would give a 404 when reloaded, but everything after the `#` is never sent to the server. The route table lives in `App.tsx`:
+
+| URL                | Shows                                             |
+| ------------------ | ------------------------------------------------- |
+| `#/`               | redirects to `#/dashboard`                        |
+| `#/dashboard`      | Dashboard                                         |
+| `#/evidence`       | Evidence Catalogue (placeholder until Exercise 5) |
+| `#/team`           | redirects to `#/team/people`                      |
+| `#/team/people`    | People & Locations, People tab                    |
+| `#/team/locations` | People & Locations, Locations tab                 |
+| `#/timeline`       | Timeline                                          |
+| `#/workspace`      | Workspace (placeholder until Exercise 5)          |
+| anything else      | `NotFoundPage`                                    |
+
+- The path of each main view is stored once in `shell/views.ts` and used by the navigation (`NavLink`) and by the Dashboard links (`Link`).
+- `/team` is a **nested route**: `TeamLayout` draws the title and the tab bar and has an `<Outlet />` where the matching child (`PeopleTab` or `LocationsTab`) is shown.

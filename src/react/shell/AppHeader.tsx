@@ -1,12 +1,6 @@
 import { MainNav } from "./MainNav";
-import type { ViewName } from "./views";
 
-interface AppHeaderProps {
-  currentView: ViewName;
-  onNavigate: (view: ViewName) => void;
-}
-
-export function AppHeader({ currentView, onNavigate }: AppHeaderProps) {
+export function AppHeader() {
   return (
     <header className="app-header">
       <div className="header-inner">
@@ -19,7 +13,7 @@ export function AppHeader({ currentView, onNavigate }: AppHeaderProps) {
             </p>
           </div>
         </div>
-        <MainNav currentView={currentView} onNavigate={onNavigate} />
+        <MainNav />
       </div>
     </header>
   );
