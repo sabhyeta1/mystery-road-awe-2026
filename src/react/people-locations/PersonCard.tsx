@@ -1,17 +1,21 @@
+import { Link } from "react-router";
 import type { Person } from "../../types/domain";
 
 interface PersonCardProps {
   person: Person;
   evidenceCount: number;
+  profilePath?: string;
 }
 
-export function PersonCard({ person, evidenceCount }: PersonCardProps) {
+export function PersonCard({ person, evidenceCount, profilePath }: PersonCardProps) {
   return (
     <div className="person-card">
       <div className="person-card-header">
         <img className="person-avatar" src={person.avatar} alt={"Portrait of " + person.name} />
         <div>
-          <h3>{person.name}</h3>
+          <h3>
+            {profilePath === undefined ? person.name : <Link to={profilePath}>{person.name}</Link>}
+          </h3>
           <div className="person-role">{person.role}</div>
         </div>
       </div>

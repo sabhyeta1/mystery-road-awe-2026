@@ -350,21 +350,37 @@ component state) matter for the user? Name a concrete capability the user gains.
 
 ---
 
----
-
 ## Demo 9 — Route parameters
 
 **Tasks**
 
-- [ ] Add at least one route that takes a parameter (e.g. a person or location id in the URL, such as `/team/people/:personId`), and use that parameter inside the corresponding component to determine what to render.
-- [ ] Make at least one place in the app link to that parameterized route (not just typing the URL by hand). For example, a person's name in a related-evidence context, or a "view on team page" link.
+- [x] Add at least one route that takes a parameter (e.g. a person or location id in the URL, such as `/team/people/:personId`), and use that parameter inside the corresponding component to determine what to render.
+
+    I added the route `people/:personId` as a child of the `/team` route in `App.tsx`, so the full path is `/team/people/:personId`. It renders the new `PersonDetailTab` component. Inside it I read the parameter with `const { personId } = useParams();` and look the person up with `people.find((item) => item.id === personId)`. The page then shows the person's `PersonCard` and their `background` text, which no other page displayed before. Because it is a child of `/team`, the page title and the tab bar stay, and the People tab stays highlighted.
+
+- [x] Make at least one place in the app link to that parameterized route (not just typing the URL by hand). For example, a person's name in a related-evidence context, or a "view on team page" link.
+
+    The person's name on every card in the People list is now a `<Link>` to `/team/people/<id>`, for example `/team/people/nova-byte`. `PersonCard` got an optional `profilePath` prop: `PeopleList` passes it, so the name becomes a link there, and `PersonDetailTab` leaves it out, so the name on the detail page is plain text and doesn't link to itself. The detail page also has a "← Back to all people" link.
 
 **Questions** (depend on the tasks above)
 
-- [ ] How do you read a route parameter's value inside your component, and what type is it as far as TypeScript is concerned by default? What did you have to do to use it safely (e.g. what if the id in the URL doesn't match any real person)?
-- [ ] What's the practical difference, for the user, between `/team/people/nova-byte` (a route
+- [x] How do you read a route parameter's value inside your component, and what type is it as far as TypeScript is concerned by default? What did you have to do to use it safely (e.g. what if the id in the URL doesn't match any real person)?
+
+    I read it with the `useParams()` hook from React Router: `const { personId } = useParams();`. The name `personId` matches the `:personId` in the route path.
+
+    By default TypeScript types every route parameter as `string | undefined`. It is a string because it comes from the URL text, and it may be `undefined` because TypeScript can't know that the URL really contained that part. If the id were a number, I would have to convert it myself, because it always arrives as text. My ids are strings, so that wasn't needed.
+
+    To use it safely I don't assume that a person exists. `people.find(...)` returns `undefined` when nothing matches, so I check `if (person === undefined)` and show "There is no person with the id “…” in this case." with a link back to the list. Without that check, a URL like `#/team/people/nobody` would crash when the code tries to read `person.name`. Only after that check does TypeScript know that `person` is a real `Person`. I tested it with `#/team/people/nobody`.
+
+- [x] What's the practical difference, for the user, between `/team/people/nova-byte` (a route
 param) and `/team/people?person=nova-byte` (a query param)? Why is one more appropriate than
 the other for this specific case?
+
+    A route parameter is part of the **path**. It identifies one specific page, "Nova Byte's profile", and every person gets their own readable address that can be bookmarked and shared. It is required: without it the route doesn't match at all, and the router uses it to decide which route to show.
+
+    A query parameter comes after the `?` and is not part of route matching. It describes an **optional variation of the same page**. `/team/people?person=nova-byte` would still be "the People list", only with some option added, and without the parameter it would simply show the full list. Query parameters are meant for things like filters, sorting or a pre-selection.
+
+    For this case the route parameter fits better, because opening a person is not a filter on the list. It is a separate page for one specific thing, with its own content (the background text), and that page can't exist without knowing which person. The URL also reads like a hierarchy (team → people → Nova Byte). I use a query parameter in Demo 10, where `?person=…` only changes which events the Timeline shows initially.
 
 ---
 

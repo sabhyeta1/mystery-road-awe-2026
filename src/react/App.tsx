@@ -5,11 +5,12 @@ import { DashboardPage } from "./dashboard/DashboardPage";
 import { EvidencePage } from "./evidence/EvidencePage";
 import { TeamLayout } from "./people-locations/TeamLayout";
 import { PeopleTab } from "./people-locations/PeopleTab";
+import { PersonDetailTab } from "./people-locations/PersonDetailTab";
 import { LocationsTab } from "./people-locations/LocationsTab";
 import { TimelinePage } from "./timeline/TimelinePage";
 import { WorkspacePage } from "./workspace/WorkspacePage";
-import { useCaseData } from "./data/useCaseData";
 import { NotFoundPage } from "./shell/NotFoundPage";
+import { useCaseData } from "./data/useCaseData";
 
 export function App() {
   const loadState = useCaseData();
@@ -25,6 +26,7 @@ export function App() {
           <Route path="/team" element={<TeamLayout />}>
             <Route index element={<Navigate to="/team/people" replace />} />
             <Route path="people" element={<PeopleTab loadState={loadState} />} />
+            <Route path="people/:personId" element={<PersonDetailTab loadState={loadState} />} />
             <Route path="locations" element={<LocationsTab loadState={loadState} />} />
           </Route>
           <Route path="/timeline" element={<TimelinePage loadState={loadState} />} />

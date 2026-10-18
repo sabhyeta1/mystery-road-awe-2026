@@ -46,6 +46,7 @@ The app uses **React Router** in **hash mode** (`HashRouter` in `main.tsx`). Has
 | `#/evidence`       | Evidence Catalogue (placeholder until Exercise 5) |
 | `#/team`           | redirects to `#/team/people`                      |
 | `#/team/people`    | People & Locations, People tab                    |
+| `#/team/people/<id>` | Detail page of one person (route parameter `:personId`); unknown ids show a message |
 | `#/team/locations` | People & Locations, Locations tab                 |
 | `#/timeline`       | Timeline                                          |
 | `#/workspace`      | Workspace (placeholder until Exercise 5)          |
