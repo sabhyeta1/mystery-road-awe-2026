@@ -49,8 +49,14 @@ The app uses **React Router** in **hash mode** (`HashRouter` in `main.tsx`). Has
 | `#/team/people/<id>` | Detail page of one person (route parameter `:personId`); unknown ids show a message |
 | `#/team/locations` | People & Locations, Locations tab                 |
 | `#/timeline`       | Timeline                                          |
+| `#/timeline?person=<id>` | Timeline with the person filter pre-selected from the query parameter; unknown ids are ignored |
 | `#/workspace`      | Workspace (placeholder until Exercise 5)          |
 | anything else      | `NotFoundPage`                                    |
 
 - The path of each main view is stored once in `shell/views.ts` and used by the navigation (`NavLink`) and by the Dashboard links (`Link`).
 - `/team` is a **nested route**: `TeamLayout` draws the title and the tab bar and has an `<Outlet />` where the matching child (`PeopleTab` or `LocationsTab`) is shown.
+
+### Route parameters and query parameters
+
+- **Route parameter** (`/team/people/:personId`): identifies one specific thing. Read with `useParams()` in `PersonDetailTab`, which shows a message if no person has that id.
+- **Query parameter** (`/timeline?person=<id>`): an optional setting of a page. Read once with `useSearchParams()` in `TimelinePage` to decide the initial list. The page never writes to the URL, and the filter dropdowns in `TimelineFilters` are display-only (`defaultValue`, no state, no `onChange`) until Exercise 5.

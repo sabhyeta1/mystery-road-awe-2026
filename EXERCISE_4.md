@@ -388,13 +388,34 @@ the other for this specific case?
 
 **Tasks**
 
-- [ ] On the Timeline view, read a query parameter (e.g. `?person=...`) when the page loads, and use it to determine the *initial* rendered list (for example, pre-selecting a person filter if the app is opened via a link that includes one). Remember, the filter controls themselves don't need to be interactive yet. This is about parameterizing the initial render from the URL, not wiring `onChange`.
-- [ ] Do a final pass confirming: Dashboard, People & Locations, and Timeline are fully React, none of them use `innerHTML` or manual DOM creation anywhere, and all three are reachable via real, bookmarkable routes.
+- [x] On the Timeline view, read a query parameter (e.g. `?person=...`) when the page loads, and use it to determine the *initial* rendered list (for example, pre-selecting a person filter if the app is opened via a link that includes one). Remember, the filter controls themselves don't need to be interactive yet. This is about parameterizing the initial render from the URL, not wiring `onChange`.
+
+    `TimelinePage` reads `?person=` with `useSearchParams()` (I only use the read-only first value, not the setter) and `searchParams.get("person")`. If a person with that id exists, the page filters the events with `event.personIds.includes(...)`. An unknown id is ignored and all events are shown. So `#/timeline?person=nova-byte` shows 3 events, and `#/timeline` shows all 15.
+
+    I also built `TimelineFilters`, the toolbar with four dropdowns (order, person, location, event type). It is display-only: it uses `defaultValue` to pre-select the person from the URL and has no state and no `onChange`, so changing a dropdown does nothing yet. The person dropdown has `key={selectedPersonId}` so that it is re-created if the URL changes while the Timeline is open, because `defaultValue` is only read when the element is created. The link "Show this person's timeline events" on each person's detail page opens the Timeline with the person pre-selected.
+
+- [x] Do a final pass confirming: Dashboard, People & Locations, and Timeline are fully React, none of them use `innerHTML` or manual DOM creation anywhere, and all three are reachable via real, bookmarkable routes.
+
+    I searched `src/react` with `grep` for `innerHTML`, `createElement`, `appendChild`, `insertAdjacentHTML`, `document.` and `window.`. The only match is `document.getElementById("root")` in `main.tsx`, which is where React is attached to the page. I also searched for state hooks: the only ones are `useState` and `useEffect` in `useCaseData.ts`, which load the JSON data, so no page or component has state of its own.
+
+    The three views are reachable through real routes: `#/dashboard`, `#/team/people` and `#/team/locations`, and `#/timeline` (also with `?person=…`). I opened each in a fresh tab and reloaded, and each opened directly. `npm run format:check`, `typecheck`, `lint` and `build` all pass.
 
 **Questions** (depend on the tasks above)
 
-- [ ] Why is reading a query parameter once, on initial render, still consistent with this exercise's "no state beyond what's necessary to render the initial view" rule? What would cross the line into "real interactivity" that's out of scope until Exercise 5?
-- [ ] What would you need to add to make Timeline's filters *actually* filter the list when a user changes them? (You don't have to build it. Just name the concept you'd need)
-- [ ] Across the 3 views you've now fully migrated, what's one piece of duplicated logic or markup you noticed but didn't extract yet? Why didn't you, and would you if you had more time?
+- [x] Why is reading a query parameter once, on initial render, still consistent with this exercise's "no state beyond what's necessary to render the initial view" rule? What would cross the line into "real interactivity" that's out of scope until Exercise 5?
+
+    Reading the query parameter doesn't create any state in my component. The URL is an input from outside, just like props: the page reads it, calculates which events to show, and draws them. There is no `useState`, nothing remembers a value between renders, and nothing in my code changes what is shown afterwards. The result is only a function of the URL and the data, which is the same "describe the initial view" idea as for props.
+
+    What would cross the line is anything that reacts to the user: `onChange` handlers on the dropdowns, storing the selected values in `useState`, making the dropdowns controlled (`value` plus `onChange`), or calling `setSearchParams` to write the user's choice back to the URL. Then the list would have to update after interaction, and that is Exercise 5.
+
+- [x] What would you need to add to make Timeline's filters *actually* filter the list when a user changes them? (You don't have to build it. Just name the concept you'd need)
+
+    I would need **state plus event handlers**, which turns the dropdowns into *controlled components*. That means `useState` (or URL state through `setSearchParams`) to hold the selected order, person, location and type; `onChange` handlers on each `<select>` that update that state; and `value={...}` instead of `defaultValue` so React owns the dropdown. Each time the state changes, React re-renders and the list is derived from the data and the current filter values (the same filtering I already do for the person). If I want the filters to stay bookmarkable, I would keep the state in the URL by writing to the query parameters with `setSearchParams`.
+
+- [x] Across the 3 views you've now fully migrated, what's one piece of duplicated logic or markup you noticed but didn't extract yet? Why didn't you, and would you if you had more time?
+
+    The loading and error handling. `DashboardPage`, `PeopleTab`, `LocationsTab`, `PersonDetailTab` and `TimelinePage` all start with the same two `if` blocks: "if `loadState.status` is `loading`, show Loading…" and "if it is `error`, show the message". They differ only slightly in what they wrap the message in (the Dashboard and Timeline use their own section, the tabs only a `<p>`).
+
+    I didn't extract it because the small differences would have needed extra props, and because Exercise 5 introduces shared state, which will probably change how the data reaches the pages anyway. So I would have rewritten the extraction soon. With more time I would make a small component, for example `<LoadGate loadState={loadState}>{(data) => …}</LoadGate>`, that handles the two early states once and passes the loaded data to its children. A smaller duplicate is counting a person's evidence, which is done in both `PeopleTab` and `PersonDetailTab` and could be one helper function.
 
 ---

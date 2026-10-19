@@ -39,6 +39,9 @@ export function PersonDetailTab({ loadState }: PersonDetailTabProps) {
         <Link to="/team/people">← Back to all people</Link>
       </p>
       <PersonCard person={person} evidenceCount={evidenceCount} />
+      <p>
+        <Link to={"/timeline?person=" + person.id}>Show this person&rsquo;s timeline events</Link>
+      </p>
       <h3>Background</h3>
       <p>{person.background}</p>
     </>
