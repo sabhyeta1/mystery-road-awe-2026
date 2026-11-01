@@ -4,7 +4,7 @@ import { StatCard } from "./StatCard";
 import { ReviewProgress } from "./ReviewProgress";
 import { RecentEvidenceList } from "./RecentEvidenceList";
 import { RecentTimelineList } from "./RecentTimelineList";
-import { readBookmarkCount } from "./bookmarks";
+import { useBookmarks } from "../state/BookmarksContext";
 import type { LoadState } from "../data/useCaseData";
 
 interface DashboardPageProps {
@@ -12,6 +12,8 @@ interface DashboardPageProps {
 }
 
 export function DashboardPage({ loadState }: DashboardPageProps) {
+  const { isBookmarked } = useBookmarks();
+
   if (loadState.status === "loading") {
     return (
       <section className="view active">
@@ -35,6 +37,7 @@ export function DashboardPage({ loadState }: DashboardPageProps) {
   const reviewedCount = evidence.filter((item) => item.status.toLowerCase() === "reviewed").length;
   const progressPercent =
     evidence.length === 0 ? 0 : Math.round((reviewedCount / evidence.length) * 100);
+  const bookmarkedCount = evidence.filter((item) => isBookmarked(item.id)).length;
   const recentEvidence = evidence.slice(-5).reverse();
   const recentTimeline = timeline.slice(-5).reverse();
 
@@ -50,7 +53,7 @@ export function DashboardPage({ loadState }: DashboardPageProps) {
         <StatCard value={evidence.length} label="Evidence items" />
         <StatCard value={people.length} label="People" />
         <StatCard value={locations.length} label="Locations" />
-        <StatCard value={readBookmarkCount()} label="Bookmarked" />
+        <StatCard value={bookmarkedCount} label="Bookmarked" />
         <StatCard value={reviewedCount} label="Reviewed" />
       </div>
 
