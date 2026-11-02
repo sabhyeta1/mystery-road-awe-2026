@@ -180,14 +180,24 @@ With a static import, the data is already there at the first render, so the comp
 
 **Tasks**
 
-- [ ] For at least one view, implement all three states explicitly: a loading indicator while the fetch is pending, a real error message if it fails (using your backend's on-demand error endpoint from Demo 4 to trigger it live), and a distinct "no data" empty state if the response is successful but contains nothing.
-- [ ] Make sure these three states are visually and structurally distinguishable from each other, not all three collapsing into "shows nothing."
+- [x] For at least one view, implement all three states explicitly: a loading indicator while the fetch is pending, a real error message if it fails (using your backend's on-demand error endpoint from Demo 4 to trigger it live), and a distinct "no data" empty state if the response is successful but contains nothing.
+
+I implemented all three states on the Evidence view. While the request is pending it shows a spinner with ‘Loading evidence…’. If the request fails, it shows a red box saying the evidence could not be loaded, with the technical detail. If the request succeeds but the evidence list is empty, it shows a grey dashed box saying that no evidence has been recorded yet.
+
+- [x] Make sure these three states are visually and structurally distinguishable from each other, not all three collapsing into "shows nothing."
+
+They are distinguishable visually: a spinner, a red box with a heavy left border, and a grey dashed box. They are also separate components, each with its own early return in EvidencePage, and they have different roles for screen readers (status for loading and alert for the error). None of them collapses into an empty page.
 
 **Questions** (depend on the tasks above)
 
-- [ ] Trigger your backend's error endpoint live and show the error state appearing. What state variable(s) are you tracking to distinguish "loading," "error," and "loaded successfully but empty" from each other?
-- [ ] The original vanilla app had a bug where a failed fetch could leave a loading spinner stuck forever because the cleanup/hide-loading step was never called on the error path. Explain specifically how your React version's state management makes that particular mistake
+- [x] Trigger your backend's error endpoint live and show the error state appearing. What state variable(s) are you tracking to distinguish "loading," "error," and "loaded successfully but empty" from each other?
+
+I track a single state value loadState with a status field that is 'loading', 'error' or 'ready'. The error status also carries the message, and the ready status carries the data. ‘Loaded but empty’ is not its own status: it is ready with data.evidence.length === 0, which EvidencePage checks separately. [Live: open /dev/settings?fail=evidence and reload, and the error box appears.]
+
+- [x] The original vanilla app had a bug where a failed fetch could leave a loading spinner stuck forever because the cleanup/hide-loading step was never called on the error path. Explain specifically how your React version's state management makes that particular mistake
 harder to make (or show that it doesn't, and fix it).
+
+In the vanilla app, the ‘loading finished’ step was only called on the success path. For example, evidenceViewLoading was only set to false after a successful fetch, and the catch only showed an alert, so a failure left the spinner on screen. In React, loading is not a flag that I have to switch off. It is just one value of status, and every outcome of the request replaces it: the .then sets ready, and the .catch sets error. The screen is calculated from status, so once it is no longer 'loading' the spinner cannot be shown. It makes the mistake harder, but not impossible: if I forgot the .catch, the status would stay 'loading' forever.
 
 ---
 

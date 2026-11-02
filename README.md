@@ -68,6 +68,9 @@ directly in the browser on port 3001:
 - `/dev/settings?delay=3000` makes every API answer take 3 seconds (maximum 15000).
 - `/dev/settings?fail=evidence` makes `/api/evidence` answer with HTTP 500. Use `fail=all` for
   every endpoint and `fail=none` to switch it off again.
+- `/dev/settings?empty=evidence` makes `/api/evidence` answer successfully, but with an empty list
+  (also works for `people`, `locations` and `timeline`; use `empty=none` to switch it off).
+  `?empty=1` works on a single request too.
 - `?delay=2000` or `?fail=1` can also be added to a single API request, for example
   `/api/people?delay=2000`.
 - `API_DELAY_MS=2000 npm run server` sets a default delay when the server starts.

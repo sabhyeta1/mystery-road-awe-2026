@@ -14,11 +14,14 @@ const DATA_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "
 
 // One endpoint per resource: GET /api/<name> returns public/data/<name>.json
 const RESOURCES = ["case", "evidence", "people", "locations", "timeline"];
+// "case" is a single object, not a list, so it cannot be answered with an empty list.
+const LIST_RESOURCES = RESOURCES.filter((name) => name !== "case");
 
 // Simulation settings. They can be changed while the server is running (see /dev/settings).
 const settings = {
   delayMs: Number(process.env.API_DELAY_MS) || 0, // artificial delay for every API response
   failResource: "none", // "none", "all", or the name of one resource that should answer with a 500
+  emptyResource: "none", // "none" or the name of one list resource that should answer with []
 };
 
 function parseDelay(value) {
@@ -56,6 +59,15 @@ for (const resource of RESOURCES) {
       return;
     }
 
+    // ?empty=1 on a single request, or the global setting, simulates a successful but empty answer.
+    const shouldBeEmpty =
+      LIST_RESOURCES.includes(resource) &&
+      (request.query.empty !== undefined || settings.emptyResource === resource);
+    if (shouldBeEmpty) {
+      response.json([]);
+      return;
+    }
+
     try {
       const json = await readFile(path.join(DATA_DIR, resource + ".json"), "utf-8");
       response.type("application/json").send(json);
@@ -70,7 +82,8 @@ for (const resource of RESOURCES) {
 //   /dev/settings                      shows the current settings
 //   /dev/settings?delay=3000           every API answer takes 3 seconds
 //   /dev/settings?fail=evidence        /api/evidence answers with a 500 error
-//   /dev/settings?fail=none&delay=0    back to normal
+//   /dev/settings?empty=evidence       /api/evidence answers successfully, but with an empty list
+//   /dev/settings?fail=none&empty=none&delay=0    back to normal
 app.get("/dev/settings", (request, response) => {
   if (request.query.delay !== undefined) {
     settings.delayMs = parseDelay(request.query.delay);
@@ -84,6 +97,16 @@ app.get("/dev/settings", (request, response) => {
       return;
     }
     settings.failResource = value;
+  }
+  if (request.query.empty !== undefined) {
+    const value = String(request.query.empty);
+    if (value !== "none" && !LIST_RESOURCES.includes(value)) {
+      response
+        .status(400)
+        .json({ error: "empty must be none or one of: " + LIST_RESOURCES.join(", ") });
+      return;
+    }
+    settings.emptyResource = value;
   }
   response.json(settings);
 });
