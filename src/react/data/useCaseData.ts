@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import type {
   CaseInfo,
   CaseLocation,
@@ -8,6 +8,7 @@ import type {
   Person,
   TimelineEvent,
 } from "../../types/domain";
+import { useFetch, type FetchState } from "./useFetch";
 
 export interface CaseData {
   caseInfo: CaseInfo;
@@ -24,19 +25,12 @@ export type LoadState =
 
 export interface CaseDataResult {
   loadState: LoadState;
-  // Which request produced the data that is currently on screen (shown in the header).
-  appliedRequestId: number | null;
+  // The load numbers of the data currently on screen. One number is normal. Two or more
+  // numbers mean the screen mixes data from different loads (this is what a request race does).
+  appliedLoads: number[];
   // Fetches everything again.
   reload: () => void;
 }
-
-// DEMO SWITCH (Exercise 6, Demo 7): true = obsolete requests are cancelled and their results
-// are ignored. Set it to false ONLY to demonstrate the request race, then set it back to true.
-const CANCEL_OBSOLETE_REQUESTS = true;
-
-// Numbers the requests (1, 2, 3, ...). Changing it inside an effect is fine, because effects
-// are the place for side effects (see the rule from Demo 1).
-let requestCounter = 0;
 
 // The JSON is not fully consistent (one item has the status "Reviewed" with a capital R).
 // Normalising once here means every component can rely on the exact lowercase values.
@@ -48,69 +42,71 @@ function normaliseEvidence(item: Evidence): Evidence {
   };
 }
 
-async function fetchJson<T>(path: string, signal: AbortSignal | undefined): Promise<T> {
-  // cache: "no-store" = always ask the server. A reload must really reload, and the browser
-  // must not make a second identical request wait for the first one.
-  const response = await fetch(path, { signal, cache: "no-store" });
-  if (!response.ok) {
-    throw new Error("Could not load " + path + " (status " + response.status + ")");
+// Combines the five separate fetch states into the one LoadState the views understand:
+// any error wins, otherwise everything must be ready, otherwise we are still loading.
+function combineStates(
+  caseInfo: FetchState<CaseInfo>,
+  people: FetchState<Person[]>,
+  locations: FetchState<CaseLocation[]>,
+  evidence: FetchState<Evidence[]>,
+  timeline: FetchState<TimelineEvent[]>,
+): LoadState {
+  for (const state of [caseInfo, people, locations, evidence, timeline]) {
+    if (state.status === "error") return { status: "error", message: state.message };
   }
-  return (await response.json()) as T;
+  if (
+    caseInfo.status === "ready" &&
+    people.status === "ready" &&
+    locations.status === "ready" &&
+    evidence.status === "ready" &&
+    timeline.status === "ready"
+  ) {
+    return {
+      status: "ready",
+      data: {
+        caseInfo: caseInfo.data,
+        people: people.data,
+        locations: locations.data,
+        evidence: evidence.data.map(normaliseEvidence),
+        timeline: timeline.data,
+      },
+    };
+  }
+  return { status: "loading" };
 }
 
 export function useCaseData(): CaseDataResult {
-  const [loadState, setLoadState] = useState<LoadState>({ status: "loading" });
-  const [appliedRequestId, setAppliedRequestId] = useState<number | null>(null);
-  const [reloadCount, setReloadCount] = useState(0);
+  // Hooks must be called in the same order on every render, so these are five plain lines
+  // (no loop, no condition). Each call keeps its own state, effect and cancellation.
+  const caseInfo = useFetch<CaseInfo>("/api/case");
+  const people = useFetch<Person[]>("/api/people");
+  const locations = useFetch<CaseLocation[]>("/api/locations");
+  const evidence = useFetch<Evidence[]>("/api/evidence");
+  const timeline = useFetch<TimelineEvent[]>("/api/timeline");
 
-  // Runs on mount and again every time reloadCount changes (that is, on every reload).
-  useEffect(() => {
-    requestCounter += 1;
-    const requestId = requestCounter;
+  const loadState = useMemo(
+    () =>
+      combineStates(caseInfo.state, people.state, locations.state, evidence.state, timeline.state),
+    [caseInfo.state, people.state, locations.state, evidence.state, timeline.state],
+  );
 
-    // This request's "cancel button". Its signal is handed to every fetch below.
-    const controller = new AbortController();
-    const signal = CANCEL_OBSOLETE_REQUESTS ? controller.signal : undefined;
-    const isObsolete = () => CANCEL_OBSOLETE_REQUESTS && controller.signal.aborted;
-
-    Promise.all([
-      fetchJson<CaseInfo>("/api/case", signal),
-      fetchJson<Person[]>("/api/people", signal),
-      fetchJson<CaseLocation[]>("/api/locations", signal),
-      fetchJson<Evidence[]>("/api/evidence", signal),
-      fetchJson<TimelineEvent[]>("/api/timeline", signal),
-    ])
-      .then(([caseInfo, people, locations, evidence, timeline]) => {
-        if (isObsolete()) return;
-        setLoadState({
-          status: "ready",
-          data: {
-            caseInfo,
-            people,
-            locations,
-            evidence: evidence.map(normaliseEvidence),
-            timeline,
-          },
-        });
-        setAppliedRequestId(requestId);
-      })
-      .catch((err: unknown) => {
-        // An aborted request is not an error, it is simply no longer wanted.
-        if (isObsolete()) return;
-        const message = err instanceof Error ? err.message : String(err);
-        setLoadState({ status: "error", message });
-        setAppliedRequestId(null);
-      });
-
-    // React calls this when the effect is replaced (reload) or the component unmounts.
-    return () => {
-      controller.abort();
-    };
-  }, [reloadCount]);
+  const loadNumbers = [caseInfo, people, locations, evidence, timeline].map(
+    (result) => result.loadNumber,
+  );
+  const appliedLoads =
+    loadState.status === "ready"
+      ? [...new Set(loadNumbers)]
+          .filter((number): number is number => number !== null)
+          .sort((a, b) => b - a)
+      : [];
 
   function reload(): void {
-    setReloadCount((previous) => previous + 1);
+    caseInfo.reload();
+    people.reload();
+    locations.reload();
+    evidence.reload();
+    timeline.reload();
   }
 
-  return { loadState, appliedRequestId, reload };
+  return { loadState, appliedLoads, reload };
 }

@@ -17,7 +17,7 @@ import { useInvestigationState } from "./state/useInvestigationState";
 
 export function App() {
   useDocumentTitle();
-  const { loadState: rawLoadState, appliedRequestId, reload } = useCaseData();
+  const { loadState: rawLoadState, appliedLoads, reload } = useCaseData();
   // App is the common ancestor of every view, so notes and review changes are owned here.
   // effectiveLoadState is the loaded data with the user's review changes applied.
   const {
@@ -30,7 +30,7 @@ export function App() {
 
   return (
     <BookmarksProvider>
-      <AppHeader onReload={reload} appliedRequestId={appliedRequestId} />
+      <AppHeader onReload={reload} appliedLoads={appliedLoads} />
       <main className="app-main">
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />

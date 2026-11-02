@@ -2,10 +2,16 @@ import { MainNav } from "./MainNav";
 
 interface AppHeaderProps {
   onReload: () => void;
-  appliedRequestId: number | null;
+  appliedLoads: number[];
 }
 
-export function AppHeader({ onReload, appliedRequestId }: AppHeaderProps) {
+function describeLoads(loads: number[]): string {
+  if (loads.length === 0) return "No data loaded";
+  if (loads.length === 1) return "Showing data from load #" + loads[0];
+  return "MIXED data from loads " + loads.map((load) => "#" + load).join(" and ");
+}
+
+export function AppHeader({ onReload, appliedLoads }: AppHeaderProps) {
   return (
     <header className="app-header">
       <div className="header-inner">
@@ -20,9 +26,7 @@ export function AppHeader({ onReload, appliedRequestId }: AppHeaderProps) {
               <button type="button" className="btn btn-primary btn-small" onClick={onReload}>
                 Reload data
               </button>{" "}
-              {appliedRequestId === null
-                ? "No data loaded"
-                : "Showing data from request #" + appliedRequestId}
+              {describeLoads(appliedLoads)}
             </p>
           </div>
         </div>

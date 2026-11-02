@@ -233,12 +233,21 @@ They are the same mechanism. The abort happens inside the effect’s cleanup fun
 
 **Tasks**
 
-- [ ] Extract the data-fetching logic (loading/error/empty state, the effect, cancellation) you've built across Demos 5–7 into at least one reusable custom hook (e.g. `useFetch<T>(url)` or a more specific `useEvidence()`), and use it in at least two different places.
+- [x] Extract the data-fetching logic (loading/error/empty state, the effect, cancellation) you've built across Demos 5–7 into at least one reusable custom hook (e.g. `useFetch<T>(url)` or a more specific `useEvidence()`), and use it in at least two different places.
+
+I extracted the fetching logic into one generic custom hook, useFetch<T>(url). It holds the state (loading, error or ready with data), the effect that does the fetch, the AbortController cleanup and a reload function. I use it five times in useCaseData: for /api/case, /api/people, /api/locations, /api/evidence and /api/timeline. useCaseData combines the five states into the one LoadState that the views already understood
+
 
 **Questions** (depend on the tasks above)
 
-- [ ] What makes something a legitimate custom hook rather than just a regular helper function? What rule(s) does React enforce about how/where hooks (including your custom one) can be called?
-- [ ] Show the two places using your hook. What did extracting it save you from duplicating, and is there anything about the two usages that *couldn't* be shared and had to stay specific to each call site?
+- [x] What makes something a legitimate custom hook rather than just a regular helper function? What rule(s) does React enforce about how/where hooks (including your custom one) can be called?
+
+A custom hook is a function whose name starts with use and that calls other hooks like useState and useEffect. That is what makes it different from a normal helper function: a normal function can’t keep state between renders or run effects, and a hook can, and every call gets its own separate state. React enforces the Rules of Hooks. Hooks may only be called at the top level of a component or another hook, never inside loops, conditions, nested functions or event handlers, and only from components or custom hooks. React matches each hook call to its stored state by the order of the calls, so that order must be identical on every render. That is why I wrote five plain lines in useCaseData. The use prefix lets tools like the React ESLint plugin check these rules. I don’t have that plugin set up in this project.
+
+- [x] Show the two places using your hook. What did extracting it save you from duplicating, and is there anything about the two usages that *couldn't* be shared and had to stay specific to each call site?
+
+The two places are two of the five call sites in useCaseData, for example useFetch<Person[]>('/api/people') and useFetch<Evidence[]>('/api/evidence'). Extracting the hook saved me from writing the state, the effect, the error handling, the AbortController and the reload five times. What stays specific to each call site is the URL and the type T. Evidence also has its own post-processing, normaliseEvidence, which only makes sense for that data and lives in useCaseData. The combination into one LoadState, including that any error wins, is also specific to this app and not part of the reusable hook.
+
 
 ---
 
