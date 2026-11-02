@@ -1,6 +1,11 @@
 import { MainNav } from "./MainNav";
 
-export function AppHeader() {
+interface AppHeaderProps {
+  onReload: () => void;
+  appliedRequestId: number | null;
+}
+
+export function AppHeader({ onReload, appliedRequestId }: AppHeaderProps) {
   return (
     <header className="app-header">
       <div className="header-inner">
@@ -10,6 +15,14 @@ export function AppHeader() {
             <h1>Project ReMotion</h1>
             <p className="subtitle">
               Investigate the failure of an AI-assisted rehabilitation robot.
+            </p>
+            <p className="subtitle">
+              <button type="button" className="btn btn-primary btn-small" onClick={onReload}>
+                Reload data
+              </button>{" "}
+              {appliedRequestId === null
+                ? "No data loaded"
+                : "Showing data from request #" + appliedRequestId}
             </p>
           </div>
         </div>

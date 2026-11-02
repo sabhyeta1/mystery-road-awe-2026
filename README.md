@@ -66,6 +66,7 @@ directly in the browser on port 3001:
 
 - `/dev/settings` shows the current settings.
 - `/dev/settings?delay=3000` makes every API answer take 3 seconds (maximum 15000).
+- `/dev/settings?delayFor=evidence` makes the delay apply to `/api/evidence` only (use `delayFor=all` to undo). This is how to build a request race.
 - `/dev/settings?fail=evidence` makes `/api/evidence` answer with HTTP 500. Use `fail=all` for
   every endpoint and `fail=none` to switch it off again.
 - `/dev/settings?empty=evidence` makes `/api/evidence` answer successfully, but with an empty list

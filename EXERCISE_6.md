@@ -205,15 +205,27 @@ In the vanilla app, the ‘loading finished’ step was only called on the succe
 
 **Tasks**
 
-- [ ] Using your backend's artificial-delay control, construct a request race: trigger a request, then trigger another one (for the same data) before the first resolves, and observe
+- [x] Using your backend's artificial-delay control, construct a request race: trigger a request, then trigger another one (for the same data) before the first resolves, and observe
 what happens if you do nothing special about it. Does the UI ever show a result from the
 *older* request after a newer one already resolved?
-- [ ] Fix it using `AbortController` (or a request-id/"ignore stale response" guard, your choice), so the UI can never show a stale result.
+
+I added a ‘Reload data’ button, numbered each request, and made the header show which request’s data is on screen. With the fix switched off, I slowed down /api/evidence, clicked reload (request #3), then set the delay to 0 and clicked reload again (request #4). The UI first showed #4. About 12 seconds later, request #3 finished and the header went back to #3, so yes, the UI showed the older request’s result after the newer one
+
+- [x] Fix it using `AbortController` (or a request-id/"ignore stale response" guard, your choice), so the UI can never show a stale result.
+
+I fixed it with AbortController. Each run of the effect creates a controller and passes its signal to all five fetch calls. The cleanup function calls controller.abort(). In the .then and .catch, I return early if the signal is aborted, so a cancelled request can never change the state. With the fix on, the header stays on #4 and the Network tab shows the old requests as canceled.
+
 
 **Questions** (depend on the tasks above)
 
-- [ ] Reproduce the race live (with artificial delay dialed up) before your fix, then show the fix preventing it. What exact sequence of events causes the stale result to win without the fix?
-- [ ] `AbortController` cancels the *request*. Does the effect's cleanup function run separately, or is aborting the fetch itself what you're doing inside the cleanup? Explain how the two connect in your implementation.
+- [x] Reproduce the race live (with artificial delay dialed up) before your fix, then show the fix preventing it. What exact sequence of events causes the stale result to win without the fix?
+
+First, I click reload, which sends request A, and the server holds /api/evidence for 12 seconds. Then I click again, which sends request B, and the server answers immediately. B arrives first and setLoadState puts B’s data on screen. Then A finally arrives. Its .then runs and calls setLoadState with the old data, which overwrites the newer data. The last response to arrive wins, not the last request that was sent, and nothing checked whether A was still relevant.
+
+- [x] `AbortController` cancels the *request*. Does the effect's cleanup function run separately, or is aborting the fetch itself what you're doing inside the cleanup? Explain how the two connect in your implementation.
+
+
+They are the same mechanism. The abort happens inside the effect’s cleanup function. When I click reload a second time, reloadCount changes, so React runs the cleanup of the previous effect before running the new one. That cleanup calls controller.abort(). The pending fetch calls then reject with an AbortError, and Promise.all rejects. In my .catch, signal.aborted is true, so I return without touching the state. The same cleanup also runs when the component unmounts. One thing to note is that abort stops my browser waiting for the answer, but the server may still finish its work, because it doesn’t know
 
 ---
 

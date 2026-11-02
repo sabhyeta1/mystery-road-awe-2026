@@ -19,7 +19,8 @@ const LIST_RESOURCES = RESOURCES.filter((name) => name !== "case");
 
 // Simulation settings. They can be changed while the server is running (see /dev/settings).
 const settings = {
-  delayMs: Number(process.env.API_DELAY_MS) || 0, // artificial delay for every API response
+  delayMs: Number(process.env.API_DELAY_MS) || 0, // artificial delay for API responses
+  delayResource: "all", // "all", or the name of the one resource that the delay applies to
   failResource: "none", // "none", "all", or the name of one resource that should answer with a 500
   emptyResource: "none", // "none" or the name of one list resource that should answer with []
 };
@@ -45,8 +46,15 @@ app.use((request, _response, next) => {
 for (const resource of RESOURCES) {
   app.get("/api/" + resource, async (request, response) => {
     // ?delay=2000 on a single request wins over the global setting.
+    // The global delay applies to every resource, or only to settings.delayResource.
+    const globalDelayApplies =
+      settings.delayResource === "all" || settings.delayResource === resource;
     const delayMs =
-      request.query.delay !== undefined ? parseDelay(request.query.delay) : settings.delayMs;
+      request.query.delay !== undefined
+        ? parseDelay(request.query.delay)
+        : globalDelayApplies
+          ? settings.delayMs
+          : 0;
     await wait(delayMs);
 
     // ?fail=1 on a single request, or the global setting, simulates a server error.
@@ -81,12 +89,23 @@ for (const resource of RESOURCES) {
 // Simulation controls (not data). Examples, opened directly in the browser on port 3001:
 //   /dev/settings                      shows the current settings
 //   /dev/settings?delay=3000           every API answer takes 3 seconds
+//   /dev/settings?delayFor=evidence    the delay only applies to /api/evidence (use "all" to undo)
 //   /dev/settings?fail=evidence        /api/evidence answers with a 500 error
 //   /dev/settings?empty=evidence       /api/evidence answers successfully, but with an empty list
 //   /dev/settings?fail=none&empty=none&delay=0    back to normal
 app.get("/dev/settings", (request, response) => {
   if (request.query.delay !== undefined) {
     settings.delayMs = parseDelay(request.query.delay);
+  }
+  if (request.query.delayFor !== undefined) {
+    const value = String(request.query.delayFor);
+    if (value !== "all" && !RESOURCES.includes(value)) {
+      response
+        .status(400)
+        .json({ error: "delayFor must be all or one of: " + RESOURCES.join(", ") });
+      return;
+    }
+    settings.delayResource = value;
   }
   if (request.query.fail !== undefined) {
     const value = String(request.query.fail);
