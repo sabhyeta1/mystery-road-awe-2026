@@ -1,13 +1,12 @@
 import { useMemo } from "react";
-import type {
-  CaseInfo,
-  CaseLocation,
-  Evidence,
-  EvidenceRelevance,
-  EvidenceStatus,
-  Person,
-  TimelineEvent,
-} from "../../types/domain";
+import type { CaseInfo, CaseLocation, Evidence, Person, TimelineEvent } from "../../types/domain";
+import {
+  fetchCaseInfo,
+  fetchEvidence,
+  fetchLocations,
+  fetchPeople,
+  fetchTimeline,
+} from "../api/caseApi";
 import { useFetch, type FetchState } from "./useFetch";
 
 export interface CaseData {
@@ -30,16 +29,6 @@ export interface CaseDataResult {
   appliedLoads: number[];
   // Fetches everything again.
   reload: () => void;
-}
-
-// The JSON is not fully consistent (one item has the status "Reviewed" with a capital R).
-// Normalising once here means every component can rely on the exact lowercase values.
-function normaliseEvidence(item: Evidence): Evidence {
-  return {
-    ...item,
-    status: item.status.toLowerCase() as EvidenceStatus,
-    relevance: item.relevance.toLowerCase() as EvidenceRelevance,
-  };
 }
 
 // Combines the five separate fetch states into the one LoadState the views understand:
@@ -67,7 +56,7 @@ function combineStates(
         caseInfo: caseInfo.data,
         people: people.data,
         locations: locations.data,
-        evidence: evidence.data.map(normaliseEvidence),
+        evidence: evidence.data,
         timeline: timeline.data,
       },
     };
@@ -78,11 +67,11 @@ function combineStates(
 export function useCaseData(): CaseDataResult {
   // Hooks must be called in the same order on every render, so these are five plain lines
   // (no loop, no condition). Each call keeps its own state, effect and cancellation.
-  const caseInfo = useFetch<CaseInfo>("/api/case");
-  const people = useFetch<Person[]>("/api/people");
-  const locations = useFetch<CaseLocation[]>("/api/locations");
-  const evidence = useFetch<Evidence[]>("/api/evidence");
-  const timeline = useFetch<TimelineEvent[]>("/api/timeline");
+  const caseInfo = useFetch(fetchCaseInfo);
+  const people = useFetch(fetchPeople);
+  const locations = useFetch(fetchLocations);
+  const evidence = useFetch(fetchEvidence);
+  const timeline = useFetch(fetchTimeline);
 
   const loadState = useMemo(
     () =>

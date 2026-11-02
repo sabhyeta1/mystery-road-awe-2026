@@ -255,13 +255,24 @@ The two places are two of the five call sites in useCaseData, for example useFet
 
 **Tasks**
 
-- [ ] Organize your data-fetching code into distinct layers: a thin API-access layer (raw `fetch` calls, knows the backend's URLs/shapes and nothing else), your custom hook(s) from Demo 8 (application logic: loading/error/cancellation), and your components (UI only, no direct `fetch` calls anywhere in a component).
-- [ ] Confirm no component in the app calls `fetch` directly anymore.
+- [x] Organize your data-fetching code into distinct layers: a thin API-access layer (raw `fetch` calls, knows the backend's URLs/shapes and nothing else), your custom hook(s) from Demo 8 (application logic: loading/error/cancellation), and your components (UI only, no direct `fetch` calls anywhere in a component).
+
+I split the data code into three layers. The API-access layer is src/react/api/caseApi.ts: functions like fetchPeople and fetchEvidence that call fetch, know the URLs and the shape of the answers, and nothing else. The application-logic layer is the custom hook useFetch, plus useCaseData which uses it five times: it holds loading, error and ready state, the effect, cancellation and reload, and it only calls the function it’s given. The UI layer is the components, which only render the loadState they receive as props.
+
+- [x] Confirm no component in the app calls `fetch` directly anymore.
+
+grep -rn "fetch(" src/react finds only lines in api/caseApi.ts. I also added an ESLint rule that forbids fetch anywhere in src/react outside the api folder, and I showed that npm run lint fails if I add a fetch call to a component.
 
 **Questions** (depend on the tasks above)
 
-- [ ] If your backend's endpoint URLs or response shape changed tomorrow, how many files would you need to touch, and which ones? Would any component need to change?
-- [ ] What's the argument *against* this separation for a small app like this one? E.g. when would the extra layering be overkill rather than helpful? Do you think it's justified here?
+- [x] If your backend's endpoint URLs or response shape changed tomorrow, how many files would you need to touch, and which ones? Would any component need to change?
+
+If an endpoint URL changed, for example /api/evidence to /api/v2/evidence, I would change one file, caseApi.ts, and no component or hook. If the response shape changed, for example a field was renamed, I would also change only caseApi.ts, where I can map the answer back to my domain type, and if the domain type itself changed I would also touch types/domain.ts. Components would only change if they have to display something that is genuinely new
+
+- [x] What's the argument *against* this separation for a small app like this one? E.g. when would the extra layering be overkill rather than helpful? Do you think it's justified here?
+
+
+The argument against is that for a small app, three layers mean more files and more indirection. To follow one request you jump from the component to useCaseData, useFetch and caseApi, and the API functions are mostly one-liners around fetchJson. For a prototype, a single consumer, or endpoints that never change, it can be overkill. I think it is justified here, mainly because the layers change for different reasons: URLs and data shapes, cancellation and race logic, and rendering. The hook layer clearly earns its place, because the race and cleanup logic exists once instead of five times. The API layer is the thinnest, but it keeps the URLs and the evidence clean-up in one spot, and the lint rule makes the separation cheap to maintain
 
 ---
 

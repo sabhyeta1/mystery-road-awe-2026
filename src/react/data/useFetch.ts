@@ -8,7 +8,7 @@ export interface FetchResult<T> {
   // Which load produced the data that is currently held: 1 = first load, 2 = after the first
   // reload, and so on. null while there is no data.
   loadNumber: number | null;
-  // Fetches the URL again.
+  // Fetches the data again.
   reload: () => void;
 }
 
@@ -16,32 +16,30 @@ export interface FetchResult<T> {
 // are ignored. Set it to false ONLY to demonstrate the request race, then set it back to true.
 const CANCEL_OBSOLETE_REQUESTS = true;
 
-// A reusable custom hook: fetches JSON from a URL and keeps track of loading, error and result.
+// Application-logic layer: a reusable custom hook that runs a fetch function and keeps track of
+// loading, error and result. It does not know any URL and never calls fetch itself; it only
+// calls the function it is given (one of the functions from src/react/api/).
+//
+// The fetcher must be a stable function (declared once at module level), not an inline arrow
+// function: it is a dependency of the effect, and a new function on every render would start a
+// new request on every render.
+//
 // "Empty" is not a separate status: it is a ready state whose data happens to be empty (for
 // example a list with length 0), so the component that knows what "empty" means decides.
-export function useFetch<T>(url: string): FetchResult<T> {
+export function useFetch<T>(fetcher: (signal?: AbortSignal) => Promise<T>): FetchResult<T> {
   const [state, setState] = useState<FetchState<T>>({ status: "loading" });
   const [loadNumber, setLoadNumber] = useState<number | null>(null);
   const [reloadCount, setReloadCount] = useState(0);
 
-  // Runs on mount, and again whenever the url changes or a reload is requested.
+  // Runs on mount, and again whenever the fetcher changes or a reload is requested.
   useEffect(() => {
-    // This run's "cancel button". Its signal is handed to fetch.
+    // This run's "cancel button". Its signal is handed to the fetcher.
     const controller = new AbortController();
     const isObsolete = () => CANCEL_OBSOLETE_REQUESTS && controller.signal.aborted;
 
     async function load(): Promise<void> {
       try {
-        // cache: "no-store" = always ask the server. A reload must really reload, and the
-        // browser must not make a second identical request wait for the first one.
-        const response = await fetch(url, {
-          signal: CANCEL_OBSOLETE_REQUESTS ? controller.signal : undefined,
-          cache: "no-store",
-        });
-        if (!response.ok) {
-          throw new Error("Could not load " + url + " (status " + response.status + ")");
-        }
-        const data = (await response.json()) as T;
+        const data = await fetcher(CANCEL_OBSOLETE_REQUESTS ? controller.signal : undefined);
         if (isObsolete()) return;
         setState({ status: "ready", data });
         setLoadNumber(reloadCount + 1);
@@ -56,11 +54,11 @@ export function useFetch<T>(url: string): FetchResult<T> {
 
     void load();
 
-    // React calls this when the effect is replaced (new url, reload) or the component unmounts.
+    // React calls this when the effect is replaced (new fetcher, reload) or the component unmounts.
     return () => {
       controller.abort();
     };
-  }, [url, reloadCount]);
+  }, [fetcher, reloadCount]);
 
   function reload(): void {
     setReloadCount((previous) => previous + 1);

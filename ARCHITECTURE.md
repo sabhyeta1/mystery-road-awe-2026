@@ -68,3 +68,20 @@ The app uses **React Router** in **hash mode** (`HashRouter` in `main.tsx`). Has
 
 - A **side effect** is anything observable outside the function other than its return value.
 - **Derived values** (for example the filtered evidence list) are pure calculations. They stay in render, with no effect and no extra state.
+
+
+## Data layers (Exercise 6)
+
+Loading data from the backend is split into three layers. Each layer only talks to the one below it:
+
+| Layer             | Where                                       | Responsibility                                                                                                                                                                                            |
+| ----------------- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| UI                | components in the feature folders           | Render what the props describe. Never call `fetch`.                                                                                                                                                       |
+| Application logic | `data/useFetch.ts`, `data/useCaseData.ts`   | Loading / error / ready state, effects, cancellation of obsolete requests, reload, combining the five results. Knows no URLs.                                                                             |
+| API access        | `api/caseApi.ts`                            | The only place that calls `fetch`. Knows the URLs and the shape of the answers (and fixes inconsistent data, e.g. the capital "R" in `Reviewed`). Knows nothing about React.                              |
+
+Direction: components → hooks in `data/` → functions in `api/`.
+
+The rule is enforced by ESLint: `fetch` is forbidden in `src/react/` outside `src/react/api/` (see `eslint.config.js`).
+
+`useFetch` receives its fetch function as an argument and uses it in an effect's dependency array, so that function must be declared once at module level. An inline arrow function would start a new request on every render.

@@ -16,5 +16,19 @@ export default defineConfig([
       "no-var": "error",
     },
   },
+  {
+    // Layering rule: only the API-access layer may call fetch().
+    files: ["src/react/**/*.{ts,tsx}"],
+    ignores: ["src/react/api/**"],
+    rules: {
+      "no-restricted-globals": [
+        "error",
+        {
+          name: "fetch",
+          message: "Call the backend only from src/react/api/ and use a hook in components.",
+        },
+      ],
+    },
+  },
   prettier,
 ]);
