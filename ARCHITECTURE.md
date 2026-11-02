@@ -60,3 +60,11 @@ The app uses **React Router** in **hash mode** (`HashRouter` in `main.tsx`). Has
 
 - **Route parameter** (`/team/people/:personId`): identifies one specific thing. Read with `useParams()` in `PersonDetailTab`, which shows a message if no person has that id.
 - **Query parameter** (`/timeline?person=<id>`): an optional setting of a page. Read once with `useSearchParams()` in `TimelinePage` to decide the initial list. The page never writes to the URL, and the filter dropdowns in `TimelineFilters` are display-only (`defaultValue`, no state, no `onChange`) until Exercise 5.
+
+
+## Render vs. effects (Exercise 6)
+
+**Rule:** Render only calculates. It turns props, state and context into JSX and must give the same output for the same inputs, without changing anything outside the function. Anything that reaches out of the component (network requests, timers, subscriptions, writing to `localStorage`, changing `document.title`, logging) does not belong in render. It belongs in an **event handler** if the user caused it, or in an **effect** if it has to stay in sync with what is on screen.
+
+- A **side effect** is anything observable outside the function other than its return value.
+- **Derived values** (for example the filtered evidence list) are pure calculations. They stay in render, with no effect and no extra state.
