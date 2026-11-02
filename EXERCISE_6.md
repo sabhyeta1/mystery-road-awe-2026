@@ -71,15 +71,27 @@ No. Calculating the filtered evidence list only reads props and state and return
 
 **Tasks**
 
-- [ ] Write a small `useEffect` example (can be a throwaway one first) with an empty dependency
+- [x] Write a small `useEffect` example (can be a throwaway one first) with an empty dependency
 array, one with a populated dependency array, and one with no array at all, and observe how
 often each one actually runs.
-- [ ] Find a real, justified use for `useEffect` you'll need in this app (loading data is coming in Demo 5, so pick something else — e.g. syncing the document title to the current view).
+
+I wrote EffectLab with three effects: one with no array (A), one with [] (B) and one with [count] (C). On load, all three ran, twice each because of Strict Mode in development. Clicking ‘other’ only re-ran A. Clicking ‘count’ re-ran A and C. B never ran again.
+
+- [x] Find a real, justified use for `useEffect` you'll need in this app (loading data is coming in Demo 5, so pick something else — e.g. syncing the document title to the current view).
+
+
+I keep the browser tab title in sync with the current view, e.g. ‘Evidence – Project ReMotion’. This is justified because document.title lives outside what React renders, in the page’s <head>, and it has to follow the route as it changes, so it needs an effect
 
 **Questions** (depend on the tasks above)
 
-- [ ] What does React actually compare, between renders, to decide whether to re-run an effect with a populated dependency array? What happens if you omit a value your effect actually uses from that array?
-- [ ] What's the difference, in practice, between `useEffect(fn, [])` and just writing `fn()` directly in the component body? Why doesn't the second one work the way you'd expect for "run once"?
+- [x] What does React actually compare, between renders, to decide whether to re-run an effect with a populated dependency array? What happens if you omit a value your effect actually uses from that array?
+
+After each render, React compares every value in the dependency array to its value from the previous render, using Object.is. Primitives like strings are compared by value, while objects and arrays are compared by reference. If any value differs, React runs the previous effect’s cleanup and then the effect again. If I omit a value the effect uses, the effect doesn’t re-run when it changes and keeps working with the old value. I showed this by changing [title] to []: the tab title got stuck on the first page.
+
+- [x] What's the difference, in practice, between `useEffect(fn, [])` and just writing `fn()` directly in the component body? Why doesn't the second one work the way you'd expect for "run once"?
+
+A call in the component body runs on every render, so it can’t mean ‘once.’ It also runs during render, which makes it a side effect in the wrong place: it’s repeated, and it runs before the screen is updated. useEffect(fn, []) is run by React after the render has been committed to the screen, and only on mount. In development Strict Mode adds one extra check run. It can also return a cleanup function, which a plain call can’t
+
 
 ---
 
