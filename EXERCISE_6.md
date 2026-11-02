@@ -158,15 +158,21 @@ CORS stands for Cross-Origin Resource Sharing. Browsers apply the same-origin po
 
 **Tasks**
 
-- [ ] Replace at least one view's data source (previously the static `data/*.json` fetch/import) with a real `fetch()` call to your new backend, wired up inside a `useEffect`.
-- [ ] Do the same for the rest of the app's data sources, so the whole app now reads from your backend rather than static files.
+- [x] Replace at least one view's data source (previously the static `data/*.json` fetch/import) with a real `fetch()` call to your new backend, wired up inside a `useEffect`.
+- [x] Do the same for the rest of the app's data sources, so the whole app now reads from your backend rather than static files.
 
 **Questions** (depend on the tasks above)
 
-- [ ] Walk through exactly what happens, in order, from the component mounting to the data actually being available to render: what does the effect do, when does it run, and what causes the component to re-render once the data arrives?
-- [ ] What's different about your component now compared to before (when data came from a static
+- [x] Walk through exactly what happens, in order, from the component mounting to the data actually being available to render: what does the effect do, when does it run, and what causes the component to re-render once the data arrives?
+
+First, the component renders for the first time with the initial state { status: 'loading' }, so the views show their loading text. Then React puts that on the screen. After that, React runs the effect, once, because the dependency array is empty. The effect starts five fetch() calls with Promise.all, and the page keeps working while they are in flight. When all five answers have arrived, the .then callback runs and calls setLoadState with status: 'ready' and the data. Calling a state setter is what makes React render again, so App re-renders with the data and passes it down to the views, which now show the real content. In development, Strict Mode runs the effect twice, which is why the server log shows ten requests. The first run is cleaned up and its result is ignored through the cancelled flag
+
+- [x] What's different about your component now compared to before (when data came from a static
 import/fetch of a local file). Specifically in terms of what state it needs to track that it
 didn't need before?
+
+With a static import, the data is already there at the first render, so the component just uses a constant and needs no state. With fetch(), the data arrives later, so the first render has no data. The component has to track three things: a status that says whether it is loading, failed or ready, the data itself once it is ready, and an error message if it failed. I keep them together in one LoadState value. My app was already fetching the local files since Exercise 3, so it already had this state. What changed is that these states are now real and visible, because the server can be slow or fail.
+
 
 ---
 

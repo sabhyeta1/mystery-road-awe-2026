@@ -46,12 +46,13 @@ export function useCaseData(): LoadState {
   useEffect(() => {
     let cancelled = false;
 
+    // The data now comes from the Node backend (proxied by Vite in development).
     Promise.all([
-      fetchJson<CaseInfo>("data/case.json"),
-      fetchJson<Person[]>("data/people.json"),
-      fetchJson<CaseLocation[]>("data/locations.json"),
-      fetchJson<Evidence[]>("data/evidence.json"),
-      fetchJson<TimelineEvent[]>("data/timeline.json"),
+      fetchJson<CaseInfo>("/api/case"),
+      fetchJson<Person[]>("/api/people"),
+      fetchJson<CaseLocation[]>("/api/locations"),
+      fetchJson<Evidence[]>("/api/evidence"),
+      fetchJson<TimelineEvent[]>("/api/timeline"),
     ])
       .then(([caseInfo, people, locations, evidence, timeline]) => {
         if (cancelled) return;
