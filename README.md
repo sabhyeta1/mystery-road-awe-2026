@@ -35,6 +35,45 @@ npx serve .
 
 Then open `http://localhost:8080` (or whatever port your server prints) in your browser.
 
+## Backend (development only)
+
+Since Exercise 6, the React app loads its case data from a small Node.js server (Express) instead
+of reading the JSON files directly. **The server is for local development only and is not
+deployed.** The GitHub Pages workflow (`.github/workflows/deploy.yaml`) still only builds and
+publishes the static frontend.
+
+Run two terminals from the project root:
+
+```bash
+npm run dev      # terminal 1: the frontend (Vite)
+npm run server   # terminal 2: the backend on http://127.0.0.1:3001
+```
+
+The Vite dev server forwards every request starting with `/api` to the backend (see
+`vite.config.js`). The browser therefore only talks to one origin, so no CORS configuration is
+needed.
+
+Read-only endpoints (each returns the content of the matching file in `public/data/`):
+
+- `GET /api/case`
+- `GET /api/evidence`
+- `GET /api/people`
+- `GET /api/locations`
+- `GET /api/timeline`
+
+Simulating real-world conditions (for testing loading, error and race behaviour). Open these
+directly in the browser on port 3001:
+
+- `/dev/settings` shows the current settings.
+- `/dev/settings?delay=3000` makes every API answer take 3 seconds (maximum 15000).
+- `/dev/settings?fail=evidence` makes `/api/evidence` answer with HTTP 500. Use `fail=all` for
+  every endpoint and `fail=none` to switch it off again.
+- `?delay=2000` or `?fail=1` can also be added to a single API request, for example
+  `/api/people?delay=2000`.
+- `API_DELAY_MS=2000 npm run server` sets a default delay when the server starts.
+
+The settings only live in the server's memory and reset when the server restarts.
+
 ## Features
 
 - **Dashboard** — case summary and key statistics calculated from the loaded case data.

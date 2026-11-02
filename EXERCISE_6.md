@@ -126,16 +126,31 @@ In the lab, the specific bug is that a timer keeps running after the component i
 
 **Tasks**
 
-- [ ] Set up a minimal Node.js server (Express or equivalent) with one GET endpoint per data
+- [x] Set up a minimal Node.js server (Express or equivalent) with one GET endpoint per data
 resource (case, evidence, people, locations, timeline), each returning the same shape of data
+
+I built an Express server in server/index.js with five GET endpoints: /api/case, /api/evidence, /api/people, /api/locations and /api/timeline. Each reads the matching file from public/data and sends it back, so the shape of the data is identical to the JSON files.
+
 as the corresponding `data/*.json` file does today.
-- [ ] Add a way to deliberately simulate real-world conditions for testing later demos: an artificial delay (configurable, e.g. via a query param or env var) on at least one endpoint, and a way to make one endpoint return an error response (e.g. a 500) on demand.
-- [ ] Confirm the server runs locally alongside `vite dev` and is documented (a README section is enough) as dev-only (not part of the Exercise 2 deploy pipeline).
+- [x] Add a way to deliberately simulate real-world conditions for testing later demos: an artificial delay (configurable, e.g. via a query param or env var) on at least one endpoint, and a way to make one endpoint return an error response (e.g. a 500) on demand.
+
+For delay, I can open /dev/settings?delay=3000 to slow every response down while the server is running, or add ?delay=2000 to a single request, or set API_DELAY_MS when starting the server. For errors, /dev/settings?fail=evidence makes /api/evidence return an HTTP 500 with a JSON error message, and ?fail=1 does it for one request. fail=none switches it off.
+
+- [x] Confirm the server runs locally alongside `vite dev` and is documented (a README section is enough) as dev-only (not part of the Exercise 2 deploy pipeline).
+
+I run npm run dev in one terminal and npm run server in a second one. The README has a ‘Backend (development only)’ section explaining this. I did not touch the deploy workflow. It still only runs the build and publishes the static frontend, and Express is only a dev dependency
+
 
 **Questions** (depend on the tasks above)
 
-- [ ] Why does this exercise ask for artificial delay/error controls on the backend, instead of just pointing the frontend at the static JSON files directly (as it already could)? What could you *not* teach convincingly without them?
-- [ ] What is CORS, and did you have to deal with it running your frontend (from Vite's dev server) against this separate backend server? If yes, what did you configure and why? If no, why not?
+- [x] Why does this exercise ask for artificial delay/error controls on the backend, instead of just pointing the frontend at the static JSON files directly (as it already could)? What could you *not* teach convincingly without them?
+
+Static JSON files are always instant and either exist or return a 404, so I could not show a loading state because it would be over in milliseconds, and I could only show an error by breaking a file. I also couldn’t create a request race, because that needs one request to be slower than another one. The delay and error controls let me create slow responses and failures on demand and reproduce them every time. That is what makes the loading state, error state, race conditions and cancellation demonstrable.
+
+- [x] What is CORS, and did you have to deal with it running your frontend (from Vite's dev server) against this separate backend server? If yes, what did you configure and why? If no, why not?
+
+CORS stands for Cross-Origin Resource Sharing. Browsers apply the same-origin policy: JavaScript on one origin (scheme, host and port) may not read responses from another origin unless that server allows it with headers like Access-Control-Allow-Origin. My frontend runs on localhost:5173 and my backend on 127.0.0.1:3001, which are different origins. I didn’t have to configure CORS, because Vite’s dev server proxies every /api request. The browser only talks to localhost:5173, and Vite forwards the request to the backend itself. CORS is a rule enforced by browsers, so a server-to-server request isn’t affected. The alternative would have been to call port 3001 directly and add the CORS header to the server. The proxy only exists in the dev server, which is one more reason this setup isn’t deployable
+
 
 ---
 
