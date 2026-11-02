@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { formatDate } from "../../utils/format";
 import {
   isEvidenceRelevance,
@@ -34,6 +34,27 @@ export function EvidenceDetail({
 }: EvidenceDetailProps) {
   // The text being typed. It only becomes the saved note when "Save note" is clicked.
   const [noteDraft, setNoteDraft] = useState(savedNote);
+
+  // Pressing Escape closes the detail. The listener is attached to `window`, which lives
+  // outside React, so it must be removed again in the cleanup function.
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent): void {
+      // Do not close while the user is typing in a field (it would throw away the note draft).
+      const target = event.target;
+      if (
+        target instanceof HTMLElement &&
+        ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)
+      ) {
+        return;
+      }
+      if (event.key === "Escape") onClose();
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
 
   const personNames = evidence.personIds.map(
     (personId) => people.find((person) => person.id === personId)?.name ?? personId,

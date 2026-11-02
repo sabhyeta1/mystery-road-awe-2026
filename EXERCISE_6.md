@@ -99,14 +99,26 @@ A call in the component body runs on every render, so it can’t mean ‘once.�
 
 **Tasks**
 
-- [ ] Implement at least one effect that sets up something needing cleanup (a `setTimeout`/
+- [x] Implement at least one effect that sets up something needing cleanup (a `setTimeout`/
 `setInterval`, a `window` event listener, or similar) and returns a proper cleanup function.
-- [ ] Demonstrate what happens (e.g. via a console log in both the effect and its cleanup) when the component unmounts or the dependencies change, with and without the cleanup function present.
+
+My real effect adds a keydown listener on window in EvidenceDetail so that Escape closes the detail, and it returns a cleanup that calls removeEventListener. In CleanupLab I also wrote a setInterval ticker whose cleanup calls clearInterval
+
+- [x] Demonstrate what happens (e.g. via a console log in both the effect and its cleanup) when the component unmounts or the dependencies change, with and without the cleanup function present.
+
+With cleanup, hiding the ticker logged CLEANUP: timer stopped and the ticks stopped. Changing the speed logged CLEANUP and then EFFECT, so the old timer was stopped before the new one started. Without cleanup, there was no CLEANUP log. The counter went up by 2 per second right after mounting, because Strict Mode ran the effect twice and the first timer was never stopped. After hiding the ticker, tick kept appearing in the console, and after showing it again the ticks piled up.
 
 **Questions** (depend on the tasks above)
 
-- [ ] What actually calls your cleanup function, and when? Name at least two distinct situations that trigger it.
-- [ ] What real, observable bug would you get in this app if you set up a subscription/timer in an effect but forgot the cleanup function? Be specific, not just "a memory leak."
+- [x] What actually calls your cleanup function, and when? Name at least two distinct situations that trigger it.
+
+React calls the cleanup function, not me. There are at least two situations. First, when the component unmounts, for example when it is hidden, I navigate away, or its key changes. Second, right before the effect re-runs because a dependency changed. The cleanup of the previous run happens first, so you saw CLEANUP followed by EFFECT when I changed the speed. In development Strict Mode also triggers it once as a simulated unmount
+
+
+- [x] What real, observable bug would you get in this app if you set up a subscription/timer in an effect but forgot the cleanup function? Be specific, not just "a memory leak."
+
+In the lab, the specific bug is that a timer keeps running after the component is gone, and timers pile up: each remount adds another one. Applied to this app, if I forgot to remove the Escape listener, every evidence item I opened would leave another keydown listener on window. After closing or leaving the Evidence page, they would all still fire on every Escape press, each holding old props in memory. Pressing Escape would run all of them, and I can prove it by adding a console.log to the handler, which would print once per item I ever opened
+
 
 ---
 
