@@ -10,11 +10,13 @@ import { LocationsTab } from "./people-locations/LocationsTab";
 import { TimelinePage } from "./timeline/TimelinePage";
 import { WorkspacePage } from "./workspace/WorkspacePage";
 import { NotFoundPage } from "./shell/NotFoundPage";
+import { useDocumentTitle } from "./shell/useDocumentTitle";
 import { useCaseData } from "./data/useCaseData";
 import { BookmarksProvider } from "./state/BookmarksContext";
 import { useInvestigationState } from "./state/useInvestigationState";
 
 export function App() {
+  useDocumentTitle();
   const rawLoadState = useCaseData();
   // App is the common ancestor of every view, so notes and review changes are owned here.
   // effectiveLoadState is the loaded data with the user's review changes applied.
