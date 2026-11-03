@@ -85,3 +85,5 @@ Direction: components → hooks in `data/` → functions in `api/`.
 The rule is enforced by ESLint: `fetch` is forbidden in `src/react/` outside `src/react/api/` (see `eslint.config.js`).
 
 `useFetch` receives its fetch function as an argument and uses it in an effect's dependency array, so that function must be declared once at module level. An inline arrow function would start a new request on every render.
+
+The full data flow of one piece of data, from the JSON file to the screen, is illustrated in [`docs/data-flow.md`](docs/data-flow.md).

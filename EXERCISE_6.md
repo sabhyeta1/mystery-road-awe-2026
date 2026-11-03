@@ -274,18 +274,24 @@ If an endpoint URL changed, for example /api/evidence to /api/v2/evidence, I wou
 
 The argument against is that for a small app, three layers mean more files and more indirection. To follow one request you jump from the component to useCaseData, useFetch and caseApi, and the API functions are mostly one-liners around fetchJson. For a prototype, a single consumer, or endpoints that never change, it can be overkill. I think it is justified here, mainly because the layers change for different reasons: URLs and data shapes, cancellation and race logic, and rendering. The hook layer clearly earns its place, because the race and cleanup logic exists once instead of five times. The API layer is the thinnest, but it keeps the URLs and the evidence clean-up in one spot, and the lint rule makes the separation cheap to maintain
 
+
 ---
 
 ## Demo 10 — Data-flow wrap-up & a written UX decision
 
 **Tasks**
 
-- [ ] Illustrate the full data flow for one piece of data, end to end: the JSON file -> your backend endpoint -> the API-access layer -> your custom hook -> the component -> what's on screen.
-- [ ] Explain a short, honest justification for one loading/error/empty-state UX decision you made (e.g. what your loading indicator looks like, how errors are worded, what "empty" looks like) and note one thing you'd do differently with more time.
+- [x] Illustrate the full data flow for one piece of data, end to end: the JSON file -> your backend endpoint -> the API-access layer -> your custom hook -> the component -> what's on screen.
+
+I illustrated one piece of data, the evidence list, in docs/data-flow.md with a flow diagram and a sequence diagram. The path is: evidence.json → the Express endpoint /api/evidence → the Vite proxy → fetchEvidence in caseApi.ts → the useFetch hook → useCaseData → App → EvidencePage → the screen
+
+- [x] Explain a short, honest justification for one loading/error/empty-state UX decision you made (e.g. what your loading indicator looks like, how errors are worded, what "empty" looks like) and note one thing you'd do differently with more time.
 
 **Questions** (depend on the tasks above)
 
-- [ ] Walk through your diagram/illustration live, and for one step, explain what would break (and how you'd notice) if that step silently stopped happening.
-- [ ] Across Exercises 3–6, this app went from "read static files instantly" to "fetch from a real, sometimes-slow, sometimes-failing server". What did that change force you to add that wasn't needed before and was any of it needed *conceptually* even back when the data source was a static file, just less visible?
+- [x] Walk through your diagram/illustration live, and for one step, explain what would break (and how you'd notice) if that step silently stopped happening.
+- [x] Across Exercises 3–6, this app went from "read static files instantly" to "fetch from a real, sometimes-slow, sometimes-failing server". What did that change force you to add that wasn't needed before and was any of it needed *conceptually* even back when the data source was a static file, just less visible?
+
+Both questions answered in docs/data-flow.md 
 
 ---
