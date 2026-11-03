@@ -826,3 +826,45 @@ a.tab-btn {
   display: inline-block;
   text-decoration: none;
 }
+
+/* Loading / error / empty states (Exercise 6, Demo 6) */
+.state-box {
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+
+/* Error: something is broken */
+.state-error {
+  background: #fdecea;
+  border: 1px solid var(--color-critical);
+  color: #7a1f16;
+}
+
+.state-error h3 {
+  margin: 0 0 8px;
+  color: var(--color-critical);
+}
+
+.state-error p {
+  margin: 0 0 8px;
+}
+
+.state-error .state-detail {
+  margin-bottom: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* Empty: everything works, there is just nothing here */
+.state-empty {
+  background: transparent;
+  border: 2px dashed var(--color-border);
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: 32px 20px;
+}
+
+.state-empty p {
+  margin: 0;
+}
