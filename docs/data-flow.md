@@ -80,39 +80,28 @@ The data moves from top to bottom. The numbers match the table further down.
 ```
 
 <details>
-<summary>The same flow as a Mermaid diagram (GitHub draws it as a picture)</summary>
+<summary>The same flow as a sequence diagram (one load, in time order)</summary>
 
 ```mermaid
-flowchart LR
-    subgraph BE["BACKEND (dev only)"]
-        direction TB
-        A["1 · evidence.json<br/>public/data/"]
-        B["2 · server/index.js<br/>GET /api/evidence"]
-        P["Vite dev proxy<br/>/api → 127.0.0.1:3001"]
-        A --> B --> P
-    end
-    subgraph API["API-ACCESS LAYER"]
-        C["3 · api/caseApi.ts<br/>fetchEvidence(signal)"]
-    end
-    subgraph LOGIC["APPLICATION LOGIC (hooks)"]
-        direction TB
-        D["4 · data/useFetch.ts<br/>loading / error / ready<br/>AbortController · reload"]
-        E["data/useCaseData.ts<br/>one LoadState"]
-        D --> E
-    end
-    subgraph UI["UI (components)"]
-        direction TB
-        F["App.tsx"]
-        G["5 · EvidencePage.tsx<br/>loading · error · empty · catalogue"]
-        H["EvidenceCatalogue → EvidenceCard"]
-        I(["6 · On screen"])
-        F --> G --> H --> I
-    end
-    R["Reload data button"]
-    P ==>|"HTTP 200 + JSON"| C
-    C ==>|"Promise: Evidence[] or error"| D
-    E ==>|"LoadState"| F
-    R -. "reload()" .-> D
+sequenceDiagram
+    participant S as EvidencePage
+    participant H as useFetch
+    participant A as caseApi.ts
+    participant P as Vite proxy
+    participant B as server/index.js
+    participant F as evidence.json
+    S->>H: first render, status = loading
+    H->>A: effect runs, fetchEvidence(signal)
+    A->>P: GET /api/evidence
+    P->>B: forward to 127.0.0.1:3001
+    B->>F: read the file
+    F-->>B: JSON text
+    B-->>P: 200 + JSON (after the optional delay)
+    P-->>A: 200 + JSON
+    A->>A: check response.ok, parse, normalise
+    A-->>H: Promise resolves with Evidence[]
+    H->>H: setState(ready), unless aborted
+    H-->>S: React re-renders, cards on screen
 ```
 
 </details>
@@ -153,3 +142,25 @@ flowchart LR
 If all three showed a blank page or the same text, a user could not tell a broken server from an empty case. The manuscript calls this out directly: "Loading, error, and empty states represent different facts and should remain distinct" (6.8). I kept "empty" out of the hook's status on purpose: the hook cannot know what empty means for each kind of data, but the page can.
 
 **One thing I would do differently with more time.** Only the Evidence view uses these three states. The other four views still show a plain "Loading…" or "Something went wrong" line. With more time I would build the three states into one shared wrapper that every view uses. That wrapper would also be the natural place for a **Retry** button, because `useFetch` already has a `reload()` function, instead of telling the user to reload the whole page.
+
+## Question 2: from "read a static file" to "ask a real server"
+
+**What the real server forced me to add.** With a static file the data was always there and always instant, so I could skip most of this:
+
+- A real backend (`server/index.js`) and the Vite proxy, so the browser can ask for `/api/...` without CORS problems.
+- Simulation controls (delay, fail, empty) at `/dev/settings`, because I needed a way to _make_ the slow and broken cases happen on purpose.
+- Real loading, error and empty states in the UI (`LoadingState`, `ErrorState`, `EmptyState`).
+- A `response.ok` check, because `fetch` does not reject on a 500 answer.
+- A "Reload data" button plus an `AbortController`, to cancel old requests when a new one starts.
+- A separate API layer (`caseApi.ts`), a reusable `useFetch` hook, and an ESLint rule that forbids `fetch` outside the API layer.
+
+**What was already needed conceptually with a static file.** The problems were there before, just hidden because the file was fast and never broke:
+
+- **Loading state.** Even `fetch("data/evidence.json")` is asynchronous. The first render always happens before the data arrives, so a "not loaded yet" state was always necessary.
+- **Error state.** A file can also be missing or return a 404. `response.ok` was needed then too.
+- **Cleanup.** A component can disappear before the answer arrives. My hook already ignored late answers (a `cancelled` flag) back in the earlier exercises.
+- **Server state.** The data always belonged to the server (here, the file host), not to my app. The app only holds a copy (manuscript 13.7).
+
+**What was really new.** Overlapping requests (the race condition). It only became possible once the Reload button existed and one answer could be slower than another.
+
+**My conclusion.** The backend did not create new problems. It made existing ones visible and testable. Fast static files hid that data fetching is asynchronous and can fail, and a slow or failing server made that impossible to ignore.
